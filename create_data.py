@@ -5,17 +5,21 @@ import json
 
 
 def main():
-  """Simulates sensor and location data (in 2 spearate streams)."""
+  """Simulates sensor and location data (in 2 separate streams)."""
   if len(sys.argv) != 3:
-    print "Usage: ./create_data.py file-to-read output-file-name"
-    # sys.exit(1)
+    print "Usage: ./create_data.py number_of_users full_time_mins"
+    sys.exit(1)
+
+  n_rooms = 10
+  n_users = int(sys.argv[1])
+  time_length = int(sys.argv[2])
 
   # Output for sensor and location datastream
   badge_output = open('badge_stream', "w")
   sensor_output = open('sensor_stream', "w")
 
   # Set random state
-  random.seed(2)
+  random.seed(1)
 
   # Pre-defined graph for the rooms (r=10)
   rooms = (dict([(0, [1, 2, 3]), (1, [0, 4]), (2, [0, 5]), (3, [0, 5]), (4, [1, 7]), 
@@ -28,45 +32,48 @@ def main():
   normal_work = 9
   contamination = 5
 
-  user_id = 1
-  old_location = 100
+  old_location = [100] * n_users
   
-  # Time starts at 0 and ends 8 hours later
-  for t in range(0, 480):
-    ### Select room ###
-    # Initial location is randomly selected
-    if t == 0: 
-      new_location = random.randint(0, 9)
-    else:
-      # User changes room twice per hour in average
-      if random.random() < 2.0/60:
-        new_location = rooms[old_location][random.randint(0,len(rooms[old_location])-1)]
-      # Or stays in the same room
+  # Time starts at 0 and ends time_length mins later
+  for t in range(0, time_length):
+    # Follow the n users
+    for user_id in range (0, n_users):
+
+      ### Select room ###
+      # Initial location is randomly selected
+      if t == 0: 
+        new_location = random.randint(0, 9)
       else:
-        new_location = old_location
+        # User changes room twice per hour in average
+        if random.random() < 2.0/60:
+          new_location = rooms[old_location[user_id]][random.randint(0,len(rooms[old_location[user_id]])-1)]
+        # Or stays in the same room
+        else:
+          new_location = old_location[user_id]
 
-    ### Calculating dose rate ###
-    # Dose rate is normal except in room 6 after 240 min
-    if (new_location <> 6) or (t < 240):
-      rate = background
-    else:
-      rate = contamination
-    # Once per hour the employees get extra dose from work
-    if random.random() < 1.0/60:
-      rate = rate + normal_work
+      ### Calculating dose rate ###
+      # Dose rate is normal except in room 6 after 240 min
+      if (new_location <> 6) or (t < 240):
+        rate = background
+      else:
+        rate = contamination
+      # Once per hour the employees get extra dose from work
+      if random.random() < 1.0/60:
+        rate = rate + normal_work
       
-    loc_data = {"room": {"userid": user_id,  "timestamp": t, "newloc": new_location, "oldloc": old_location}}
-    sens_data = {"sensor": {"userid": user_id,  "timestamp": t, "doserate": rate}}
+      loc_data = {"room": {"userid": user_id,  "timestamp": t, "newloc": new_location, "oldloc": old_location[user_id]}}
+      sens_data = {"sensor": {"userid": user_id,  "timestamp": t, "doserate": rate}}
 
-    # Write the info for this minute to file   
-    json.dump(loc_data, badge_output)
-    badge_output.write("\n")
+      # Write the info for this minute to file   
+      json.dump(loc_data, badge_output)
+      badge_output.write("\n")
 
-    json.dump(sens_data, sensor_output)
-    sensor_output.write("\n")
+      json.dump(sens_data, sensor_output)
+      sensor_output.write("\n")
 
-    # Keep track of previous room
-    old_location = new_location
+      # Keep track of previous room
+      old_location[user_id] = new_location
+      # print t, user_id, new_location, rate
 
   
   # Close files
