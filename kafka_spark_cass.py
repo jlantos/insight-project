@@ -36,7 +36,7 @@ from pyspark.streaming.kafka import KafkaUtils
 
 from pyspark_cassandra import streaming
 import pyspark_cassandra, sys
-
+import json
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -47,14 +47,23 @@ if __name__ == "__main__":
     ssc = StreamingContext(sc, 1)
 
     zkQuorum, topic = sys.argv[1:]
-    kvs = KafkaUtils.createStream(ssc, zkQuorum, "spark-streaming-consumer", {topic: 1})
+    kvs = KafkaUtils.createStream(ssc, zkQuorum, "spark-streaming-consumer", {topic: 2})
     #lines = kvs.map(lambda x: x[1])
     #counts = lines.flatMap(lambda line: line.split(" ")) \
     #    .map(lambda word: (word, 1)) \
     #    .reduceByKey(lambda a, b: a+b)
     #counts.pprint()
-    raw_sensor = kvs.map(lambda x: {"timestamp": x[0], "user_id": x[1], "rate": x[2]})
-    raw_sensor.saveToCassandra("raw_data", "sensor_raw")
+    kvs.pprint()
+    raw_sensor = kvs.map(lambda (k,v): json.loads(v))
+    raw_sensor.pprint()
+    raw_sensor = raw_sensor.map(lambda v: json.loads(v))
+    raw_sensor.pprint() 
+    sensor_info = raw_sensor.map(lambda x: { "user_id": x["sensor"]["userid"], "timestamp": x["sensor"]["timestamp"],  "rate": x["sensor"]["doserate"]})
+    # raw_sensor.pprint()
+    sensor_info.pprint()
+    #print(type(sensor_info))
+    #raw_sensor = kvs.map(lambda x: {"timestamp": x[0], "user_id": x[1], "rate": x[2]})
+    sensor_info.saveToCassandra("raw_data", "sensor_raw")
 
 
     ssc.start()
