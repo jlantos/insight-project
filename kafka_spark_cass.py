@@ -58,10 +58,10 @@ if __name__ == "__main__":
     raw_sensor.pprint()
     raw_sensor = raw_sensor.map(lambda v: json.loads(v))
     raw_sensor.pprint() 
-    sensor_info = raw_sensor.map(lambda x: {"timestamp": x["sensor"]["timestamp"], "user_id": x["sensor"]["userid"], "rate": x["sensor"]["doserate"]})
+    sensor_info = raw_sensor.map(lambda x: { "user_id": x["sensor"]["userid"], "timestamp": x["sensor"]["timestamp"],  "rate": x["sensor"]["doserate"]})
     # raw_sensor.pprint()
     sensor_info.pprint()
-    print(type(sensor_info))
+    #print(type(sensor_info))
     #raw_sensor = kvs.map(lambda x: {"timestamp": x[0], "user_id": x[1], "rate": x[2]})
     sensor_info.saveToCassandra("raw_data", "sensor_raw")
 
