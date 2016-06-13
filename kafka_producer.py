@@ -28,11 +28,11 @@ def main():
   ipfile.close()
   ips = ips.split(', ')
 
-  producer_s = (KafkaProducer(bootstrap_servers=ips, 
-              value_serializer=lambda v: json.dumps(v).encode('utf-8')))
+  #producer_s = (KafkaProducer(bootstrap_servers=ips, 
+  #            value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
-  producer_r = (KafkaProducer(bootstrap_servers=ips, 
-              value_serializer=lambda v: json.dumps(v).encode('utf-8')))
+  #producer_r = (KafkaProducer(bootstrap_servers=ips, 
+  #            value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
   # Read the file over and over and send the messages line by line
   forever = True
@@ -43,11 +43,12 @@ def main():
       for line in f:
         d = yaml.safe_load(line)
         jd = json.dumps(d)
-        # topic and message
+
+        # send the keyed messages to the separate topics
         if 'sensor' in d:
-          producer_s.send(sys.argv[2],jd)
+          producer_s.send(sys.argv[2],{d['sensor']['userid']: jd})
         if 'room' in d:
-          producer_r.send(sys.argv[3],jd)
+          producer_r.send(sys.argv[3],{d['room']['userid']: jd})
         
         time.sleep(wait_time)
 
