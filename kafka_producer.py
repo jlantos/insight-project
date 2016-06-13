@@ -11,12 +11,12 @@ def main():
      with optional delay between messages"""
 
   # Housekeeping
-  if len(sys.argv) < 3:
-    print "Usage: ./kafka_producer.py file_name topic"
+  if len(sys.argv) < 4:
+    print "Usage: ./kafka_producer.py file_name sensor_topic room_topic"
     sys.exit(1)
 
-  if len(sys.argv) >= 4:
-    wait_time = float(sys.argv[3])
+  if len(sys.argv) >= 5:
+    wait_time = float(sys.argv[4])
   else:
     wait_time = 0
 
@@ -28,20 +28,27 @@ def main():
   ipfile.close()
   ips = ips.split(', ')
 
-  producer = (KafkaProducer(bootstrap_servers=ips, 
+  producer_s = (KafkaProducer(bootstrap_servers=ips, 
+              value_serializer=lambda v: json.dumps(v).encode('utf-8')))
+
+  producer_r = (KafkaProducer(bootstrap_servers=ips, 
               value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
   # Read the file over and over and send the messages line by line
   forever = True
   
-  while forever:
+ # while forever:
     # Open file and send the messages line by line
-    with open(sys.argv[1]) as f:
+  with open(sys.argv[1]) as f:
       for line in f:
         d = yaml.safe_load(line)
         jd = json.dumps(d)
         # topic and message
-        producer.send(sys.argv[2],jd)
+        if 'sensor' in d:
+          producer_s.send(sys.argv[2],jd)
+        if 'room' in d:
+          producer_r.send(sys.argv[3],jd)
+        
         time.sleep(wait_time)
 
 
