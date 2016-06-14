@@ -37,7 +37,17 @@ from pyspark_cassandra import streaming
 import pyspark_cassandra, sys
 import json
 
-if __name__ == "__main__":
+
+def sparse_sensor_data(sensor_data):
+  raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
+  raw_sensor = raw_sensor.map(lambda x: json.loads(x[x.keys()[0]]))
+  sensor_info = raw_sensor.map(lambda x: { "user_id": x["sensor"]["userid"], "timestamp": x["sensor"]["timestamp"],  "rate": x["sensor"]["doserate"]})
+
+  return sensor_info
+
+
+
+def main():
     if len(sys.argv) != 4:
         print("Usage: kafka_wordcount.py <zk> <sensor_topic> <room_topic>", file=sys.stderr)
         exit(-1)
@@ -49,20 +59,14 @@ if __name__ == "__main__":
     sensor_data = KafkaUtils.createStream(ssc, zkQuorum, "spark-streaming-consumer", {topic1: 2})
     #loc_data = KafkaUtils.createStream(ssc, zkQuorum, "spark-streaming-consumer", {topic2: 2})
     
-    sensor_data.pprint()
     
-      # raw_sensor = sensor_data.map(lambda (k,v): json.loads(v))
-    raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
-    raw_sensor.pprint()
-
-    raw_sensor = raw_sensor.map(lambda x: json.loads(x[x.keys()[0]]))
-    raw_sensor.pprint() 
-    print(type(raw_sensor))
-    sensor_info = raw_sensor.map(lambda x: { "user_id": x["sensor"]["userid"], "timestamp": x["sensor"]["timestamp"],  "rate": x["sensor"]["doserate"]})
-    sensor_info.pprint()
-    
+    sensor_info = sparse_sensor_data(sensor_data)
+    #sensor_info.pprint()
     sensor_info.saveToCassandra("raw_data", "sensor_raw")
 
 
     ssc.start()
     ssc.awaitTermination()
+
+if __name__ == '__main__':
+  main()
