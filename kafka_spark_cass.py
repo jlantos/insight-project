@@ -45,6 +45,12 @@ def sparse_sensor_data(sensor_data):
 
   return sensor_info
 
+def sparse_loc_data(sensor_data):
+  raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
+  raw_sensor = raw_sensor.map(lambda x: json.loads(x[x.keys()[0]]))
+  sensor_info = raw_sensor.map(lambda x: { "user_id": x["room"]["userid"], "timestamp": x["room"]["timestamp"],  "room": x["room"]["newloc"]})
+
+  return sensor_info
 
 
 def main():
@@ -56,13 +62,22 @@ def main():
     ssc = StreamingContext(sc, 1)
 
     zkQuorum, topic1, topic2 = sys.argv[1:]
-    sensor_data = KafkaUtils.createStream(ssc, zkQuorum, "spark-streaming-consumer", {topic1: 2})
-    #loc_data = KafkaUtils.createStream(ssc, zkQuorum, "spark-streaming-consumer", {topic2: 2})
+    # Get the sensor and location data streams
+    #sensor_data = KafkaUtils.createStream(ssc, zkQuorum, "spark-streaming-consumer", {topic1: 1})
+    #loc_data = KafkaUtils.createStream(ssc, zkQuorum, "spark-streaming-consumer-2", {topic2: 1})
     
+    kafkaBrokers = {"metadata.broker.list": "52.35.6.29:9092, 52.41.24.92:9092, 52.41.26.121:9092, 52.24.174.234:9092"}
+    sensor_data = KafkaUtils.createDirectStream(ssc, [topic1], kafkaBrokers)
+    loc_data = KafkaUtils.createDirectStream(ssc, [topic2], kafkaBrokers)
+
     
     sensor_info = sparse_sensor_data(sensor_data)
     #sensor_info.pprint()
     sensor_info.saveToCassandra("raw_data", "sensor_raw")
+
+    loc_info = sparse_loc_data(loc_data)
+    #loc_info.pprint()
+    loc_info.saveToCassandra("raw_data", "loc_raw")
 
 
     ssc.start()
