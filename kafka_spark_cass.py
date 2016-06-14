@@ -74,7 +74,11 @@ def main():
     #s2.pprint()
 
     combined_info = s1.join(s2)
-    combined_info.pprint()
+    #combined_info.pprint()
+    # Map ((room, time), rate)
+    room_info = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().map(lambda x : (x[0], list(x[1])))
+    room_info.pprint()
+    
 
     ssc.start()
     ssc.awaitTermination()
