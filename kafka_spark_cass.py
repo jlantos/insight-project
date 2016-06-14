@@ -1,33 +1,12 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 """
- Counts words in UTF8 encoded, '\n' delimited text received from the network every second.
- Usage: kafka_wordcount.py <zk> <topic>
+Processes 2 streams of sensor data from Kafka and pushes the joined tables
+to Cassandra
 
- To run this on your local machine, you need to setup Kafka and create a producer first, see
- http://kafka.apache.org/documentation.html#quickstart
+ Usage: kafka_spark_cass.py <zk> <topic1> <topic2>
 
- and then run the example
-    `$ bin/spark-submit --jars \
-      external/kafka-assembly/target/scala-*/spark-streaming-kafka-assembly-*.jar \
-      examples/src/main/python/streaming/kafka_wordcount.py \
-      localhost:2181 test`
+ /usr/local/spark/bin/spark-submit --packages org.apache.spark:spark-streaming-kafka_2.10:1.6.1,TargetHolding/pyspark-cassandra:0.3.5 kafka_spark_cass.py localhost:2181 sensor room
 """
+
 from __future__ import print_function
 
 from pyspark import SparkContext
@@ -38,12 +17,10 @@ import pyspark_cassandra, sys
 import json
 
 
-def sparse_sensor_data(sensor_data):
+def raw_data_tojson(sensor_data):
   raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
-  raw_sensor = raw_sensor.map(lambda x: json.loads(x[x.keys()[0]]))
-  sensor_info = raw_sensor.map(lambda x: { "user_id": x["sensor"]["userid"], "timestamp": x["sensor"]["timestamp"],  "rate": x["sensor"]["doserate"]})
-
-  return sensor_info
+  return(raw_sensor.map(lambda x: json.loads(x[x.keys()[0]])))
+  
 
 def sparse_loc_data(sensor_data):
   raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
@@ -60,6 +37,8 @@ def main():
 
     sc = SparkContext(appName="PythonStreamingKafkaWordCount")
     ssc = StreamingContext(sc, 1)
+    ssc.checkpoint("checkpoint")
+
 
     zkQuorum, topic1, topic2 = sys.argv[1:]
     # Get the sensor and location data streams
@@ -70,15 +49,32 @@ def main():
     sensor_data = KafkaUtils.createDirectStream(ssc, [topic1], kafkaBrokers)
     loc_data = KafkaUtils.createDirectStream(ssc, [topic2], kafkaBrokers)
 
+    ## RDD with initial state (key, value) pairs
+    #initialStateRDD = sc.parallelize([(0, 100), (1, 100)])    
     
-    sensor_info = sparse_sensor_data(sensor_data)
-    #sensor_info.pprint()
-    sensor_info.saveToCassandra("raw_data", "sensor_raw")
+    #def updateFunc(new_values, last_room):
+    #    return(new_values or last_room or 100)
 
-    loc_info = sparse_loc_data(loc_data)
+    raw_loc = raw_data_tojson(loc_data)
+    loc_info = raw_loc.map(lambda x: { "user_id": x["room"]["userid"], "timestamp": x["room"]["timestamp"],  "room": x["room"]["newloc"]})
     #loc_info.pprint()
     loc_info.saveToCassandra("raw_data", "loc_raw")
 
+    #running_rooms = loc_info.map(lambda x: x['room']).updateStateByKey(updateFunc)
+    #running_rooms.pprint()
+
+    raw_sensor = raw_data_tojson(sensor_data)
+    sensor_info = raw_sensor.map(lambda x: { "user_id": x["sensor"]["userid"], "timestamp": x["sensor"]["timestamp"],  "rate": x["sensor"]["doserate"]})
+    #sensor_info.pprint()
+    sensor_info.saveToCassandra("raw_data", "sensor_raw")
+    
+    s1 = raw_loc.map(lambda x: ((x["room"]["userid"], x["room"]["timestamp"]) , x["room"]["newloc"]))
+    #s1.pprint()
+    s2 = raw_sensor.map(lambda x: ((x["sensor"]["userid"], x["sensor"]["timestamp"]), x["sensor"]["doserate"]))
+    #s2.pprint()
+
+    combined_info = s1.join(s2)
+    combined_info.pprint()
 
     ssc.start()
     ssc.awaitTermination()
