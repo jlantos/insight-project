@@ -68,16 +68,21 @@ def main():
     #sensor_info.pprint()
     sensor_info.saveToCassandra("raw_data", "sensor_raw")
     
+    # Map the 2 streams to ((userid, time), value) then join the streams
     s1 = raw_loc.map(lambda x: ((x["room"]["userid"], x["room"]["timestamp"]) , x["room"]["newloc"]))
-    #s1.pprint()
     s2 = raw_sensor.map(lambda x: ((x["sensor"]["userid"], x["sensor"]["timestamp"]), x["sensor"]["doserate"]))
+    #s1.pprint()
     #s2.pprint()
 
     combined_info = s1.join(s2)
     #combined_info.pprint()
-    # Map ((room, time), rate)
-    room_info = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().map(lambda x : (x[0], list(x[1])))
-    room_info.pprint()
+
+    # Map ((room, time), rate) then take the average of the rates
+   # room_info = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1], x[0][0])).groupByKey().map(lambda x : (x[0], reduce(lambda x, y: x + y, list(x[1])) / len(list(x[1])), list(x[2]) ))
+    
+    #room_info.pprint()
+    room_rate = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().map(lambda x : (x[0], reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1]))) ))
+    room_rate.pprint()
     
 
     ssc.start()
