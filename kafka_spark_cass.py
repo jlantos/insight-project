@@ -16,6 +16,11 @@ from pyspark_cassandra import streaming
 import pyspark_cassandra, sys
 import json
 
+from pyspark.sql.functions import sum
+from pyspark.sql.types import *
+from pyspark.sql import Window
+from pyspark.sql import SQLContext 
+
 
 def raw_data_tojson(sensor_data):
   raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
@@ -38,7 +43,7 @@ def main():
     sc = SparkContext(appName="PythonStreamingKafkaWordCount")
     ssc = StreamingContext(sc, 1)
     ssc.checkpoint("checkpoint")
-
+    sqlContext = SQLContext(sc)
 
     zkQuorum, topic1, topic2 = sys.argv[1:]
     # Get the sensor and location data streams
@@ -56,17 +61,17 @@ def main():
     #    return(new_values or last_room or 100)
 
     raw_loc = raw_data_tojson(loc_data)
-    loc_info = raw_loc.map(lambda x: { "user_id": x["room"]["userid"], "timestamp": x["room"]["timestamp"],  "room": x["room"]["newloc"]})
+  ##  loc_info = raw_loc.map(lambda x: { "user_id": x["room"]["userid"], "timestamp": x["room"]["timestamp"],  "room": x["room"]["newloc"]})
     #loc_info.pprint()
-    loc_info.saveToCassandra("raw_data", "loc_raw")
+  ##  loc_info.saveToCassandra("raw_data", "loc_raw")
 
     #running_rooms = loc_info.map(lambda x: x['room']).updateStateByKey(updateFunc)
     #running_rooms.pprint()
 
     raw_sensor = raw_data_tojson(sensor_data)
-    sensor_info = raw_sensor.map(lambda x: { "user_id": x["sensor"]["userid"], "timestamp": x["sensor"]["timestamp"],  "rate": x["sensor"]["doserate"]})
+  ##  sensor_info = raw_sensor.map(lambda x: { "user_id": x["sensor"]["userid"], "timestamp": x["sensor"]["timestamp"],  "rate": x["sensor"]["doserate"]})
     #sensor_info.pprint()
-    sensor_info.saveToCassandra("raw_data", "sensor_raw")
+  ##  sensor_info.saveToCassandra("raw_data", "sensor_raw")
     
     # Map the 2 streams to ((userid, time), value) then join the streams
     s1 = raw_loc.map(lambda x: ((x["room"]["userid"], x["room"]["timestamp"]) , x["room"]["newloc"]))
@@ -81,14 +86,31 @@ def main():
    # room_info = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1], x[0][0])).groupByKey().map(lambda x : (x[0], reduce(lambda x, y: x + y, list(x[1])) / len(list(x[1])), list(x[2]) ))
     
     #room_info.pprint()
-    room_rate = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().map(lambda x : (x[0], reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1]))) ))
-   # room_rate.pprint()
-    room_users = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[0][0])).groupByKey().map(lambda x : (x[0], list(x[1])))
-    #room_users.pprint()
-  
-    user_rate = combined_info.map(lambda x: { "user_id": x[0][0], "timestamp": x[0][1],  "rate": x[1][1], "room": x[1][0]})
-    user_rate.pprint()
+    room_rate = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().\
+                              map(lambda x : {"room_id": x[0][0], "timestamp": x[0][1], "rate": reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1])))} )
+    #room_rate.pprint()
+    room_rate.saveToCassandra("rata_data", "room_rate")
 
+    #room_users = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[0][0])).groupByKey().map(lambda x : (x[0], list(x[1])))
+    room_users = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[0][0])).groupByKey().\
+                               map(lambda x : {"room_id": x[0][0], "timestamp": x[0][1], "users": list(x[1])})    
+    #room_users.pprint()
+    room_users.saveToCassandra("rata_data", "room_users")
+  
+    # Full info for user: id, time, rate, room
+    user_rate = combined_info.map(lambda x: { "user_id": x[0][0], "timestamp": x[0][1],  "rate": x[1][1], "room": x[1][0]})
+    #user_rate.pprint()
+    user_rate.saveToCassandra("rata_data", "user_rate")
+
+
+    # Calculate rate sum for the last 60 timeclocks
+    window = Window.partitionBy("id").orderBy("time").rowsBetween(-60, 0)
+    #room_rate_2 = room_rate.map(lambda x: (x[0][0], x[0][1], x[1][0]))
+    #room_rate_2.pprint()
+    #df_room = sqlContext.createDataFrame(room_rate_2, ['id', 'time', 'rate'])
+   # df_room = df_room.withColumn("rate",df_room["rate"].cast(DoubleType()).alias("rate"))
+   # df_room = df_room.withColumn("time", df_room["time"].cast(IntegerType()).alias("time"))
+    #df_room.show()
 
     ssc.start()
     ssc.awaitTermination()
