@@ -83,7 +83,9 @@ def main():
     #room_info.pprint()
     room_rate = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().map(lambda x : (x[0], reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1]))) ))
     room_rate.pprint()
-    
+    room_users = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[0][0])).groupByKey().map(lambda x : (x[0], list(x[1])))
+    room_users.pprint()
+  
 
     ssc.start()
     ssc.awaitTermination()
