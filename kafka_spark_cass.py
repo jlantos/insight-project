@@ -104,7 +104,7 @@ def main():
 
 
     # Calculate rate sum for the last 60 timeclocks
-    window = Window.partitionBy("id").orderBy("time").rowsBetween(-60, 0)
+    #window = Window.partitionBy("id").orderBy("time").rowsBetween(-60, 0)
     #room_rate_2 = room_rate.map(lambda x: (x[0][0], x[0][1], x[1][0]))
     #room_rate_2.pprint()
     #df_room = sqlContext.createDataFrame(room_rate_2, ['id', 'time', 'rate'])
