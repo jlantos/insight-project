@@ -28,11 +28,11 @@ def main():
   ipfile.close()
   ips = ips.split(', ')
 
-  #producer_s = (KafkaProducer(bootstrap_servers=ips, 
-  #            value_serializer=lambda v: json.dumps(v).encode('utf-8')))
+  producer_s = (KafkaProducer(bootstrap_servers=ips, 
+              value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
-  #producer_r = (KafkaProducer(bootstrap_servers=ips, 
-  #            value_serializer=lambda v: json.dumps(v).encode('utf-8')))
+  producer_r = (KafkaProducer(bootstrap_servers=ips, 
+              value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
   # Read the file over and over and send the messages line by line
   forever = True
