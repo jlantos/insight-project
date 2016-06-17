@@ -54,6 +54,11 @@ def main():
     sensor_data = KafkaUtils.createDirectStream(ssc, [topic1], kafkaBrokers)
     loc_data = KafkaUtils.createDirectStream(ssc, [topic2], kafkaBrokers)
 
+    
+  
+    ##### Merge streams and push rates to Cassandra #####
+
+
     ## RDD with initial state (key, value) pairs
     #initialStateRDD = sc.parallelize([(0, 100), (1, 100)])    
     
@@ -88,7 +93,7 @@ def main():
     #room_info.pprint()
     room_rate = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().\
                               map(lambda x : {"room_id": x[0][0], "timestamp": x[0][1], "rate": reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1])))} )
-    #room_rate.pprint()
+  #  room_rate.pprint()
     room_rate.saveToCassandra("rata_data", "room_rate")
 
     #room_users = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[0][0])).groupByKey().map(lambda x : (x[0], list(x[1])))
@@ -99,8 +104,40 @@ def main():
   
     # Full info for user: id, time, rate, room
     user_rate = combined_info.map(lambda x: { "user_id": x[0][0], "timestamp": x[0][1],  "rate": x[1][1], "room": x[1][0]})
-    #user_rate.pprint()
+   # print(type(user_rate))
     user_rate.saveToCassandra("rata_data", "user_rate")
+
+
+    
+    ##### Calculate sums for the user_rate and room_rate streams
+    #users = range(0, number_of_users)
+    #time_last_calc = {}
+    #for u in users:
+    #  time_last_calc[u] = 0
+
+    #broadcastVar = sc.broadcast(time_last_calc)
+
+    sum_time_window = 20
+
+    def filter_list(points):
+      min_time = min(points)[0]
+      return [(point[0], point[1]) for point in points if (point[0]-min_time) < sum_time_window]
+
+
+    ### Find the min time for each user in the past xxx time
+    user_rate_values = combined_info.map(lambda x: (x[0][0], (x[0][1], x[1][1]))) 
+#    windowed_user_rate = user_rate_values.window(10, 1).groupByKey().map(lambda x : (x[0], (list(x[1])))) 
+#    windowed_user_rate = user_rate_values.window(10, 1).groupByKey().map(lambda x : (x[0], min(list(x[1]))))
+#    windowed_user_rate = user_rate_values.window(10, 1).groupByKey().map(lambda x : (x[0], list(x[1]))).filter(lambda x: (y[0]-min(x[1])[0]) < 60 for y in x[1] )
+
+#    windowed_user_rate = user_rate_values.window(100, 1).groupByKey().map(lambda x : (x[0], list(x[1]))).map(lambda x: (x[0], filter_list(x[1])))
+ #   windowed_user_rate = user_rate_values.window(100, 1).groupByKey().map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": min(x[1])[0], "rate": filter_list(x[1])})
+ #   windowed_user_rate.saveToCassandra("rata_data", "user_sum")
+
+    windowed_user_rate = user_rate_values.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": min(x[1])[0], "rate": filter_list(x[1])})
+
+    windowed_user_rate.pprint()
+
 
 
     # Calculate rate sum for the last 60 timeclocks
