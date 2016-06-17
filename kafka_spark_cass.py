@@ -20,7 +20,7 @@ from pyspark.sql.functions import sum
 from pyspark.sql.types import *
 from pyspark.sql import Window
 from pyspark.sql import SQLContext 
-
+from pyspark.sql import functions
 
 def raw_data_tojson(sensor_data):
   raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
@@ -118,11 +118,13 @@ def main():
     #broadcastVar = sc.broadcast(time_last_calc)
 
     sum_time_window = 20
-
+    # Selects all data points in window, if less than limit, calcs sum based on available average 
     def filter_list(points):
       min_time = min(points)[0]
-      return [(point[0], point[1]) for point in points if (point[0]-min_time) < sum_time_window]
-
+      #return [(point[0], point[1]) for point in points if (point[0]-min_time) < sum_time_window]
+#      return(sum([(point[1]) for point in points if (point[0]-min_time) < sum_time_window])/float(len(points))*20)
+      valid_points = [(point[1]) for point in points if (point[0]-min_time) < sum_time_window]
+      return(valid_points)
 
     ### Find the min time for each user in the past xxx time
     user_rate_values = combined_info.map(lambda x: (x[0][0], (x[0][1], x[1][1]))) 
@@ -134,10 +136,20 @@ def main():
  #   windowed_user_rate = user_rate_values.window(100, 1).groupByKey().map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": min(x[1])[0], "rate": filter_list(x[1])})
  #   windowed_user_rate.saveToCassandra("rata_data", "user_sum")
 
-    windowed_user_rate = user_rate_values.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": min(x[1])[0], "rate": filter_list(x[1])})
+   # windowed_user_rate = user_rate_values.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: (x[0], min(x[1])[0], list(filter_list(x[1])))).map(lambda x: {"user_id": x[0], "timestamp": x[1], "rate": sum(x[2])})
+    def costum_add(l):
+      res = 0
+      length = 0
+      for i in l:
+        res = res + i
+        length = length + 1
+      if length:
+        res = float(res)/length*sum_time_window
+      return res 
 
-    windowed_user_rate.pprint()
-
+    windowed_user_rate = user_rate_values.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+ #   windowed_user_rate.pprint()
+    windowed_user_rate.saveToCassandra("rata_data", "user_sum")
 
 
     # Calculate rate sum for the last 60 timeclocks
