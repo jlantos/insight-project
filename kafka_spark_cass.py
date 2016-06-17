@@ -91,9 +91,12 @@ def main():
    # room_info = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1], x[0][0])).groupByKey().map(lambda x : (x[0], reduce(lambda x, y: x + y, list(x[1])) / len(list(x[1])), list(x[2]) ))
     
     #room_info.pprint()
-    room_rate = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().\
-                              map(lambda x : {"room_id": x[0][0], "timestamp": x[0][1], "rate": reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1])))} )
-  #  room_rate.pprint()
+    room_rate_gen = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().\
+                              map(lambda x : (x[0][0], (x[0][1], reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1]))))))
+  
+    room_rate = room_rate_gen.map(lambda x: {"room_id": x[0], "timestamp": x[1][0], "rate": x[1][1]})
+  
+#  room_rate.pprint()
     room_rate.saveToCassandra("rata_data", "room_rate")
 
     #room_users = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[0][0])).groupByKey().map(lambda x : (x[0], list(x[1])))
@@ -150,6 +153,11 @@ def main():
     windowed_user_rate = user_rate_values.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
  #   windowed_user_rate.pprint()
     windowed_user_rate.saveToCassandra("rata_data", "user_sum")
+
+
+
+    windowed_room_rate = room_rate_gen.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"room_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+    windowed_room_rate.saveToCassandra("rata_data", "room_sum")
 
 
     # Calculate rate sum for the last 60 timeclocks
