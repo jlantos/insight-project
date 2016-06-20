@@ -27,12 +27,12 @@ def raw_data_tojson(sensor_data):
   return(raw_sensor.map(lambda x: json.loads(x[x.keys()[0]])))
   
 
-def sparse_loc_data(sensor_data):
-  raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
-  raw_sensor = raw_sensor.map(lambda x: json.loads(x[x.keys()[0]]))
-  sensor_info = raw_sensor.map(lambda x: { "user_id": x["room"]["userid"], "timestamp": x["room"]["timestamp"],  "room": x["room"]["newloc"]})
-
-  return sensor_info
+#def sparse_loc_data(sensor_data):
+#  raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
+#  raw_sensor = raw_sensor.map(lambda x: json.loads(x[x.keys()[0]]))
+#  sensor_info = raw_sensor.map(lambda x: { "user_id": x["room"]["userid"], "timestamp": x["room"]["timestamp"],  "room": x["room"]["newloc"]})
+#
+#  return sensor_info
 
 
 def main():
@@ -81,8 +81,8 @@ def main():
     # Map the 2 streams to ((userid, time), value) then join the streams
     s1 = raw_loc.map(lambda x: ((x["room"]["uid"], x["room"]["t"]) , x["room"]["nl"]))
     s2 = raw_sensor.map(lambda x: ((x["sens"]["uid"], x["sens"]["t"]), x["sens"]["dr"]))
-    #s1.pprint()
-    #s2.pprint()
+  #  s1.pprint()
+  #  s2.pprint()
 
     combined_info = s1.join(s2)
     #combined_info.pprint()
@@ -96,19 +96,19 @@ def main():
   
     room_rate = room_rate_gen.map(lambda x: {"room_id": x[0], "timestamp": x[1][0], "rate": x[1][1]})
   
-#  room_rate.pprint()
-    room_rate.saveToCassandra("rata_data", "room_rate")
+    #room_rate.pprint()
+    room_rate.saveToCassandra("rate_data", "room_rate")
 
     #room_users = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[0][0])).groupByKey().map(lambda x : (x[0], list(x[1])))
     room_users = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[0][0])).groupByKey().\
                                map(lambda x : {"room_id": x[0][0], "timestamp": x[0][1], "users": list(x[1])})    
     #room_users.pprint()
-    room_users.saveToCassandra("rata_data", "room_users")
+    room_users.saveToCassandra("rate_data", "room_users")
   
     # Full info for user: id, time, rate, room
     user_rate = combined_info.map(lambda x: { "user_id": x[0][0], "timestamp": x[0][1],  "rate": x[1][1], "room": x[1][0]})
    # print(type(user_rate))
-    user_rate.saveToCassandra("rata_data", "user_rate")
+    user_rate.saveToCassandra("rate_data", "user_rate")
 
 
     
@@ -123,10 +123,13 @@ def main():
     sum_time_window = 20
     # Selects all data points in window, if less than limit, calcs sum based on available average 
     def filter_list(points):
-      min_time = min(points)[0]
+   #   min_time = min(points)[0]
+      max_time = max(points)[0]
       #return [(point[0], point[1]) for point in points if (point[0]-min_time) < sum_time_window]
 #      return(sum([(point[1]) for point in points if (point[0]-min_time) < sum_time_window])/float(len(points))*20)
-      valid_points = [(point[1]) for point in points if (point[0]-min_time) < sum_time_window]
+      valid_points = [(point[1]) for point in points if (max_time - point[0]) < sum_time_window]
+#      valid_points = [(point[1]) for point in points if (point[0]-min_time) < sum_time_window]
+
       return(valid_points)
 
     ### Find the min time for each user in the past xxx time
@@ -150,14 +153,14 @@ def main():
         res = float(res)/length*sum_time_window
       return res 
 
-    windowed_user_rate = user_rate_values.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+    windowed_user_rate = user_rate_values.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
  #   windowed_user_rate.pprint()
-    windowed_user_rate.saveToCassandra("rata_data", "user_sum")
+    windowed_user_rate.saveToCassandra("rate_data", "user_sum")
 
 
 
     windowed_room_rate = room_rate_gen.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"room_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
-    windowed_room_rate.saveToCassandra("rata_data", "room_sum")
+    windowed_room_rate.saveToCassandra("rate_data", "room_sum")
 
 
     # Calculate rate sum for the last 60 timeclocks
