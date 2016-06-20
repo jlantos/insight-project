@@ -45,10 +45,10 @@ def main():
         jd = json.dumps(d)
 
         # send the keyed messages to the separate topics
-        if 'sensor' in d:
-          producer_s.send(sys.argv[2],{d['sensor']['userid']: jd})
+        if 'sens' in d:
+          producer_s.send(sys.argv[2],{d['sens']['uid']: jd})
         if 'room' in d:
-          producer_r.send(sys.argv[3],{d['room']['userid']: jd})
+          producer_r.send(sys.argv[3],{d['room']['uid']: jd})
         
         time.sleep(wait_time)
 
