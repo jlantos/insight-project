@@ -79,8 +79,8 @@ def main():
   ##  sensor_info.saveToCassandra("raw_data", "sensor_raw")
     
     # Map the 2 streams to ((userid, time), value) then join the streams
-    s1 = raw_loc.map(lambda x: ((x["room"]["userid"], x["room"]["timestamp"]) , x["room"]["newloc"]))
-    s2 = raw_sensor.map(lambda x: ((x["sensor"]["userid"], x["sensor"]["timestamp"]), x["sensor"]["doserate"]))
+    s1 = raw_loc.map(lambda x: ((x["room"]["uid"], x["room"]["t"]) , x["room"]["nl"]))
+    s2 = raw_sensor.map(lambda x: ((x["sens"]["uid"], x["sens"]["t"]), x["sens"]["dr"]))
     #s1.pprint()
     #s2.pprint()
 
