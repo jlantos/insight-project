@@ -8,7 +8,7 @@ from neo4jrestclient.client import GraphDatabase
 
 
 cluster = Cluster(['52.35.6.29', '52.35.6.29', '52.35.6.29', '52.24.174.234'])
-session = cluster.connect('rata_data')
+session = cluster.connect('rate_data')
 
 
 @app.route('/')
@@ -73,7 +73,7 @@ def get_room_sum(userid):
 def get_room_alerts(num_rooms):
        db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
 
-       for room in range(0, num_rooms):
+       for room in range(0, int(num_rooms)):
          stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 1 ALLOW FILTERING".format(room)
          response = session.execute(stmt)
          response_list = []
