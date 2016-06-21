@@ -72,14 +72,19 @@ def get_room_sum(userid):
 @app.route('/api/room_notification/<num_rooms>')
 def get_room_alerts(num_rooms):
        db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
+       
+       dose_list = []
+       times = []
 
        for room in range(0, int(num_rooms)):
+         # Query last sum value for each room
          stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 1 ALLOW FILTERING".format(room)
          response = session.execute(stmt)
+         # Convert Cassandra response to ROW list
          response_list = []
          for val in response:
             response_list.append(val)
-
+         print response_list
          #if response["sum_rate"] > 80:
          #   first = "$MATCH (room { number:'" + str(room) "'})-[:GATE]-(first_con) RETURN first_con"
          #   second = "$MATCH (room { number:'" + str(room) "'})-[:GATE*2]-(sec_con) RETURN room, sec_con"
@@ -88,8 +93,10 @@ def get_room_alerts(num_rooms):
          #   for r in results:
          #     print(r[0])
 
-
-       jsonresponse = [{"time": x.timestamp, "dose_rate": x.sum_rate} for x in response_list]
+         dose_list.append(response_list[0].sum_rate)
+         times.append(response_list[0].timestamp)
+ 
+       jsonresponse = [{"time": times, "dose_rate": dose_list}] # for x in response_list]
        return jsonify(rates=jsonresponse)
 
 
