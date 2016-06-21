@@ -42,8 +42,8 @@ def main():
 
     sc = SparkContext(appName="PythonStreamingKafkaWordCount")
     ssc = StreamingContext(sc, 1)
-    ssc.checkpoint("checkpoint")
-    sqlContext = SQLContext(sc)
+    ssc.checkpoint("hdfs://ec2-52-24-174-234.us-west-2.compute.amazonaws.com:9000/usr/sp_data")
+   # sqlContext = SQLContext(sc)
 
     zkQuorum, topic1, topic2 = sys.argv[1:]
     # Get the sensor and location data streams
@@ -153,13 +153,13 @@ def main():
         res = float(res)/length*sum_time_window
       return res 
 
-    windowed_user_rate = user_rate_values.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+    windowed_user_rate = user_rate_values.groupByKeyAndWindow(50, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
  #   windowed_user_rate.pprint()
     windowed_user_rate.saveToCassandra("rate_data", "user_sum")
 
 
 
-    windowed_room_rate = room_rate_gen.groupByKeyAndWindow(100, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"room_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+    windowed_room_rate = room_rate_gen.groupByKeyAndWindow(50, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"room_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
     windowed_room_rate.saveToCassandra("rate_data", "room_sum")
 
 
