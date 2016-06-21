@@ -95,8 +95,11 @@ def get_room_alerts(num_rooms):
 
          dose_list.append(response_list[0].sum_rate)
          times.append(response_list[0].timestamp)
+
+       avg_time = sum(times) / (len(times))
+       most_active_room =  dose_list.index(max(dose_list))
  
-       jsonresponse = [{"time": times, "dose_rate": dose_list}] # for x in response_list]
+       jsonresponse = [{"avg_time": avg_time, "hot_room": most_active_room, "time": times, "dose_rate": dose_list}] # for x in response_list]
        return jsonify(rates=jsonresponse)
 
 
