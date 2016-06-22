@@ -90,6 +90,8 @@ def get_room_alerts(num_rooms):
          # If room dose is higher than limit fetch users in <= 2 distance
          if response_list[0].sum_rate > 80:
            neighbours = []
+           users_to_alert = []
+ 
            first = "MATCH (place { number:'" + str(room) + "'})-[:GATE]-(first_con) RETURN first_con.number as number"
            second = "MATCH (place { number:'" + str(room) + "'})-[:GATE*2]-(sec_con) RETURN sec_con.number as number"
            
@@ -101,7 +103,17 @@ def get_room_alerts(num_rooms):
            for r in results:
              neighbours.append(r[0])
 
-           print neighbours
+           for neighbour in neighbours:
+             stmt = "SELECT users FROM room_users WHERE room_id = " + str(neighbour) + " AND timestamp = " + str(response_list[0].timestamp)
+             print stmt
+             response = session.execute(stmt)
+             # Convert Cassandra response to ROW list
+             response_list = []
+             for val in response:
+               users_to_alert.append(val)
+           
+           print users_to_alert
+
   
          dose_list.append(response_list[0].sum_rate)
          times.append(response_list[0].timestamp)
