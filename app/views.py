@@ -104,10 +104,12 @@ def get_room_alerts(num_rooms):
              neighbours.append(r[0])
 
            for neighbour in neighbours:
-             stmt = "SELECT users FROM room_users WHERE room_id = " + str(neighbour) + " AND timestamp = " + str(response_list[0].timestamp)
+             print neighbour
+             print response_list[0].timestamp
+             stmt = "SELECT users FROM room_users WHERE room_id = " + str(neighbour) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
              print stmt
              response = session.execute(stmt)
-             # Convert Cassandra response to ROW list
+            # Convert Cassandra response to ROW list
              response_list = []
              for val in response:
                users_to_alert.append(val)
