@@ -69,6 +69,7 @@ def get_room_sum(userid):
        #return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
        return(json.dumps(jsonresponse))
 
+
 @app.route('/api/room_notification/<num_rooms>')
 def get_room_alerts(num_rooms):
        db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
@@ -130,4 +131,60 @@ def get_room_alerts(num_rooms):
                         "alerts": alerts, "dose_rates": dose_list}] # for x in response_list]
        return jsonify(rates=jsonresponse)
 
+
+@app.route('/api/user_notification/<num_users>')
+def get_room_alerts(num_rooms):
+       db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
+
+       dose_list = []
+       times = []
+       alerts = []
+
+       for user in range(0, int(num_users)):
+
+         # Query last sum value for each room
+         stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 1 ALLOW FILTERING".format(room)
+         response = session.execute(stmt)
+         # Convert Cassandra response to ROW list
+         response_list = []
+         for val in response:
+            response_list.append(val)
+         #print response_list
+
+         # If room dose is higher than limit fetch users in <= 2 distance
+         if response_list[0].sum_rate > 200:
+           connections = []
+           
+           # Fetch direct colleagues
+           first = "MATCH (user { id:'" + str(user) + "'})-[:DIRECT]-(first_con) RETURN first_con.id as id"
+           
+           results = db.query(first, returns=(int))
+           for r in results:
+             connections.append(r[0])
+
+           for connection in connections:
+             #print neighbour
+             #print response_list[0].timestamp
+             stmt = "SELECT users FROM room_users WHERE room_id = " + str(neighbour) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
+             #print stmt
+             response2 = session.execute(stmt)
+            # Convert Cassandra response to ROW list
+             response_list_2 = []
+             for val in response2:
+               users_to_alert = users_to_alert+ val[0]
+
+           alert = {"room": room, "users_to_alert": users_to_alert}
+           alerts.append(alert)
+
+         dose_list.append(response_list[0].sum_rate)
+         times.append(response_list[0].timestamp)
+
+       avg_time = sum(times) / (len(times))
+       most_active_room =  dose_list.index(max(dose_list))
+
+       hottest_room_values = get_room_sum(most_active_room)
+
+       jsonresponse = [{"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
+                        "alerts": alerts, "dose_rates": dose_list}] # for x in response_list]
+       return jsonify(rates=jsonresponse)
 
