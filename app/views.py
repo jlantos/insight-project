@@ -122,7 +122,7 @@ def get_room_alerts(num_rooms):
            first = "MATCH (room" + str(num_rooms) + "{ number :'" + str(room) + "'})-[:GATE" + str(num_rooms) + "]-(first_con) RETURN first_con.number as number"
            second = "MATCH (room" + str(num_rooms) + " { number :'" + str(room) + "'})-[:GATE" + str(num_rooms) + "*2]-(sec_con) RETURN sec_con.number as number"
            
-           print first 
+           #print first 
            results = db.query(first, returns=(int))
            for r in results:
              neighbours.append(r[0])
@@ -156,13 +156,14 @@ def get_room_alerts(num_rooms):
        # Create data for d3 force-directed graph
        room_file = str(num_rooms) + "_rooms"
        force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
+       #with open('force_graph_data', 'w') as outfile:
+       #  json.dump(force_graph_data, outfile)
+       return render_template("force_graph.html", jsondata = (json.dumps(force_graph_data)))
 
-       render_template("force-graph.html", jsondata = (json.dumps(force_graph_data)))
 
-
-       jsonresponse = [{"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
-                        "alerts": alerts, "dose_rates": dose_list}] # for x in response_list]
-       return jsonify(rates=jsonresponse)
+       #jsonresponse = [{"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
+       #                 "alerts": alerts, "dose_rates": dose_list}] # for x in response_list]
+       #return jsonify(rates=jsonresponse)
 
 
 @app.route('/api/user_notification/<num_users>_<num_rooms>')
