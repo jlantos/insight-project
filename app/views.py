@@ -14,6 +14,21 @@ session = cluster.connect('rate_data')
 @app.route('/')
 @app.route('/index')
 
+def create_room_links(filename):
+  """ Reads a csv file with the "room1, room2" edges
+      and converts the lines to a list of json """
+
+  myfile = open(filename, "r")
+  link_list = []
+
+  # Process input line by line
+  for line in myfile:
+    rooms = line.strip().split(',')
+    link_list.append({"source" : int(rooms[0]), "target" : int(rooms[1]), "value" : 1})
+
+  myfile.close()
+  return(link_list)
+
 
 def index():
   user = { 'nickname': 'Miguel' } # fake user
@@ -165,7 +180,7 @@ def get_user_alerts(num_users, num_rooms):
              curr_resp_list.append(val[0])
            dang_user_room = curr_resp_list[0]
           
-           print dang_user_room
+           #print dang_user_room
 
  
            # Fetch direct colleagues
@@ -175,7 +190,7 @@ def get_user_alerts(num_users, num_rooms):
            for r in results:
              connections.append(r[0])
               
-           print connections
+           ####print connections
            # Look up the location (room number) of the direct colleagues and calculate shortest distance
            for connection in connections:
              stmt = "SELECT room FROM user_rate WHERE user_id = " + str(connection) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
@@ -185,7 +200,7 @@ def get_user_alerts(num_users, num_rooms):
              for val in response2:
                response_list_2.append(val[0])
              con_room = response_list_2[0]
-             print con_room  
+             ####print con_room  
              # Find shortest path distance to each colleagues
              # Handle similar room numbers as well
              if con_room <> dang_user_room:
