@@ -94,9 +94,10 @@ def get_room_alerts(num_rooms):
            neighbours = []
            users_to_alert = []
  
-           first = "MATCH (place { number:'" + str(room) + "'})-[:GATE]-(first_con) RETURN first_con.number as number"
-           second = "MATCH (place { number:'" + str(room) + "'})-[:GATE*2]-(sec_con) RETURN sec_con.number as number"
+           first = "MATCH (room" + str(num_rooms) + "{ number :'" + str(room) + "'})-[:GATE" + str(num_rooms) + "]-(first_con) RETURN first_con.number as number"
+           second = "MATCH (room" + str(num_rooms) + " { number :'" + str(room) + "'})-[:GATE" + str(num_rooms) + "*2]-(sec_con) RETURN sec_con.number as number"
            
+           print first 
            results = db.query(first, returns=(int))
            for r in results:
              neighbours.append(r[0])
@@ -133,7 +134,7 @@ def get_room_alerts(num_rooms):
 
 
 @app.route('/api/user_notification/<num_users>')
-def get_room_alerts(num_rooms):
+def get_user_alerts(num_users):
        db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
 
        dose_list = []
@@ -143,7 +144,7 @@ def get_room_alerts(num_rooms):
        for user in range(0, int(num_users)):
 
          # Query last sum value for each room
-         stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 1 ALLOW FILTERING".format(room)
+         stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 1 ALLOW FILTERING".format(user)
          response = session.execute(stmt)
          # Convert Cassandra response to ROW list
          response_list = []
@@ -152,39 +153,39 @@ def get_room_alerts(num_rooms):
          #print response_list
 
          # If room dose is higher than limit fetch users in <= 2 distance
-         if response_list[0].sum_rate > 200:
+         if response_list[0].sum_rate > 100:
            connections = []
            
            # Fetch direct colleagues
-           first = "MATCH (user { id:'" + str(user) + "'})-[:DIRECT]-(first_con) RETURN first_con.id as id"
+           first = "MATCH (person { uid:'" + str(user) + "'})-[:COL" + str(num_users) + "]-(first_con) RETURN first_con.uid as uid"
            
            results = db.query(first, returns=(int))
            for r in results:
              connections.append(r[0])
+              
+           print connections
 
            for connection in connections:
-             #print neighbour
-             #print response_list[0].timestamp
-             stmt = "SELECT users FROM room_users WHERE room_id = " + str(neighbour) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
-             #print stmt
+             stmt = "SELECT room FROM user_rate WHERE user_id = " + str(connection) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
              response2 = session.execute(stmt)
             # Convert Cassandra response to ROW list
              response_list_2 = []
              for val in response2:
-               users_to_alert = users_to_alert+ val[0]
+               response_list_2.append(val[0])
 
-           alert = {"room": room, "users_to_alert": users_to_alert}
-           alerts.append(alert)
+             
+
+      #     alert = {"room": room, "users_to_alert": users_to_alert}
+     #      alerts.append(alert)
 
          dose_list.append(response_list[0].sum_rate)
          times.append(response_list[0].timestamp)
 
        avg_time = sum(times) / (len(times))
-       most_active_room =  dose_list.index(max(dose_list))
+       most_active_user =  dose_list.index(max(dose_list))
 
-       hottest_room_values = get_room_sum(most_active_room)
+     #  hottest_room_values = get_room_sum(most_active_room)
 
-       jsonresponse = [{"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
-                        "alerts": alerts, "dose_rates": dose_list}] # for x in response_list]
+       jsonresponse = [{"avg_time": avg_time, "dose_rates": dose_list}]
        return jsonify(rates=jsonresponse)
 
