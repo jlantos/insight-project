@@ -47,15 +47,15 @@ def get_room_rate(userid):
 
 @app.route('/api/user/<userid>')
 def get_user_sum(userid):
-       stmt = "SELECT * FROM user_sum WHERE user_id={0} ALLOW FILTERING".format(userid)
+       stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 50 ALLOW FILTERING".format(userid)
        response = session.execute(stmt)
        response_list = []
        for val in response:
             response_list.append(val)
 
        jsonresponse = [{"time": x.timestamp, "dose_rate": x.sum_rate} for x in response_list]
-       return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
-
+       #return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
+       return(json.dumps(jsonresponse))
 
 @app.route('/api/room/<userid>')
 def get_room_sum(userid):
@@ -153,7 +153,7 @@ def get_user_alerts(num_users, num_rooms):
          #print response_list
 
          # If room dose is higher than limit fetch users in <= 2 distance
-         if response_list[0].sum_rate > 109:
+         if response_list[0].sum_rate > 100:
            connections = []
            path_lengths = []
 
@@ -187,20 +187,23 @@ def get_user_alerts(num_users, num_rooms):
              con_room = response_list_2[0]
              print con_room  
              # Find shortest path distance to each colleagues
-             dist = "MATCH (u1:room"+ str(num_rooms) + "{ number:'" + str(dang_user_room) + "'}),(u2:room" + str(num_rooms) + " { number:'" + str(con_room) +"' }), \
+             # Handle similar room numbers as well
+             if con_room <> dang_user_room:
+               dist = "MATCH (u1:room"+ str(num_rooms) + "{ number:'" + str(dang_user_room) + "'}),(u2:room" + str(num_rooms) + " { number:'" + str(con_room) +"' }), \
                      p = shortestPath((u1)-[*..150]-(u2)) RETURN length(p) as length"
  
-             results = db.query(dist, returns=(int))
-             for r in results:
-               path_lengths.append(r[0])
+               results = db.query(dist, returns=(int))
+               for r in results:
+                 path_lengths.append(r[0])
+             else:
+                 path_lengths.append(0)
+           
+           # Select the one in the shortest distance
+           colleague_to_notify = connections[path_lengths.index(min(path_lengths))]             
 
-           print path_lengths
-  
-            
-             
+           alert = {"user_in_danger": user, "user_to_alert": colleague_to_notify, "distance": min(path_lengths)}
+           alerts.append(alert)
 
-      #     alert = {"room": room, "users_to_alert": users_to_alert}
-     #      alerts.append(alert)
 
          dose_list.append(response_list[0].sum_rate)
          times.append(response_list[0].timestamp)
@@ -208,8 +211,9 @@ def get_user_alerts(num_users, num_rooms):
        avg_time = sum(times) / (len(times))
        most_active_user =  dose_list.index(max(dose_list))
 
-     #  hottest_room_values = get_room_sum(most_active_room)
+       most_active_user_values = get_user_sum(most_active_user)
 
-       jsonresponse = [{"avg_time": avg_time, "dose_rates": dose_list}]
+       jsonresponse = [{"avg_time": avg_time, "hottest_user": most_active_user, "hottest_user_values": most_active_user_values,
+                        "alerts": alerts, "dose_rates": dose_list}]
        return jsonify(rates=jsonresponse)
 
