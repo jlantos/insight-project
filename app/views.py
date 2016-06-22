@@ -30,6 +30,16 @@ def create_room_links(filename):
   return(link_list)
 
 
+def create_room_values(dose_list):
+  """ Turns dose list to json """
+  room_list = []
+  for room in range(0, len(dose_list)): 
+    room_list.append({"name" : room, "dose": dose_list[room]})
+
+  return room_list
+
+
+
 def index():
   user = { 'nickname': 'Miguel' } # fake user
   mylist = [1,2,3,4]
@@ -143,6 +153,13 @@ def get_room_alerts(num_rooms):
        
        hottest_room_values = get_room_sum(most_active_room)
        
+       # Create data for d3 force-directed graph
+       room_file = str(num_rooms) + "_rooms"
+       force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
+
+       render_template("force-graph.html", jsondata = (json.dumps(force_graph_data)))
+
+
        jsonresponse = [{"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
                         "alerts": alerts, "dose_rates": dose_list}] # for x in response_list]
        return jsonify(rates=jsonresponse)
