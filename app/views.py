@@ -133,8 +133,8 @@ def get_room_alerts(num_rooms):
        return jsonify(rates=jsonresponse)
 
 
-@app.route('/api/user_notification/<num_users>')
-def get_user_alerts(num_users):
+@app.route('/api/user_notification/<num_users>_<num_rooms>')
+def get_user_alerts(num_users, num_rooms):
        db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
 
        dose_list = []
@@ -155,6 +155,7 @@ def get_user_alerts(num_users):
          # If room dose is higher than limit fetch users in <= 2 distance
          if response_list[0].sum_rate > 109:
            connections = []
+           path_lengths = []
 
            curr_loc_req = "SELECT room FROM user_rate WHERE user_id = " + str(user) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
            curr_resp = session.execute(curr_loc_req)
@@ -184,7 +185,17 @@ def get_user_alerts(num_users):
              for val in response2:
                response_list_2.append(val[0])
              con_room = response_list_2[0]
-             print(con_room)
+             print con_room  
+             # Find shortest path distance to each colleagues
+             dist = "MATCH (u1:room"+ str(num_rooms) + "{ number:'" + str(dang_user_room) + "'}),(u2:room" + str(num_rooms) + " { number:'" + str(con_room) +"' }), \
+                     p = shortestPath((u1)-[*..150]-(u2)) RETURN length(p) as length"
+ 
+             results = db.query(dist, returns=(int))
+             for r in results:
+               path_lengths.append(r[0])
+
+           print path_lengths
+  
             
              
 
