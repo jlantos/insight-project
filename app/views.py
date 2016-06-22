@@ -77,6 +77,7 @@ def get_room_alerts(num_rooms):
        times = []
 
        for room in range(0, int(num_rooms)):
+
          # Query last sum value for each room
          stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 1 ALLOW FILTERING".format(room)
          response = session.execute(stmt)
@@ -84,15 +85,24 @@ def get_room_alerts(num_rooms):
          response_list = []
          for val in response:
             response_list.append(val)
-         print response_list
-         #if response["sum_rate"] > 80:
-         #   first = "$MATCH (room { number:'" + str(room) "'})-[:GATE]-(first_con) RETURN first_con"
-         #   second = "$MATCH (room { number:'" + str(room) "'})-[:GATE*2]-(sec_con) RETURN room, sec_con"
+         #print response_list
+         
+         # If room dose is higher than limit fetch users in <= 2 distance
+         if response_list[0].sum_rate > 80:
+           neighbours = []
+           first = "MATCH (place { number:'" + str(room) + "'})-[:GATE]-(first_con) RETURN first_con.number as number"
+           second = "MATCH (place { number:'" + str(room) + "'})-[:GATE*2]-(sec_con) RETURN sec_con.number as number"
+           
+           results = db.query(first, returns=(int))
+           for r in results:
+             neighbours.append(r[0])
+             
+           results = db.query(second, returns=(int))
+           for r in results:
+             neighbours.append(r[0])
 
-         #   results = db.query(first, returns=(str))
-         #   for r in results:
-         #     print(r[0])
-
+           print neighbours
+  
          dose_list.append(response_list[0].sum_rate)
          times.append(response_list[0].timestamp)
 
