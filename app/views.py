@@ -153,9 +153,20 @@ def get_user_alerts(num_users):
          #print response_list
 
          # If room dose is higher than limit fetch users in <= 2 distance
-         if response_list[0].sum_rate > 100:
+         if response_list[0].sum_rate > 109:
            connections = []
-           
+
+           curr_loc_req = "SELECT room FROM user_rate WHERE user_id = " + str(user) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
+           curr_resp = session.execute(curr_loc_req)
+           # Convert Cassandra response to ROW list
+           curr_resp_list = []
+           for val in curr_resp:
+             curr_resp_list.append(val[0])
+           dang_user_room = curr_resp_list[0]
+          
+           print dang_user_room
+
+ 
            # Fetch direct colleagues
            first = "MATCH (person { uid:'" + str(user) + "'})-[:COL" + str(num_users) + "]-(first_con) RETURN first_con.uid as uid"
            
@@ -164,7 +175,7 @@ def get_user_alerts(num_users):
              connections.append(r[0])
               
            print connections
-
+           # Look up the location (room number) of the direct colleagues and calculate shortest distance
            for connection in connections:
              stmt = "SELECT room FROM user_rate WHERE user_id = " + str(connection) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
              response2 = session.execute(stmt)
@@ -172,7 +183,9 @@ def get_user_alerts(num_users):
              response_list_2 = []
              for val in response2:
                response_list_2.append(val[0])
-
+             con_room = response_list_2[0]
+             print(con_room)
+            
              
 
       #     alert = {"room": room, "users_to_alert": users_to_alert}
