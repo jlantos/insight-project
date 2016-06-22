@@ -59,7 +59,7 @@ var graph = {{ jsondata | safe  }};
       .call(force.drag);
 
   node.append("title")
-      .text(function(d) { return [d.name, d.dose]; });
+      .text(function(d) { return (d.name).toString().concat(': ', d.dose); });
 
   force.on("tick", function() {
     link.attr("x1", function(d) { return d.source.x; })
