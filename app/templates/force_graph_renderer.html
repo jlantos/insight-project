@@ -1,17 +1,18 @@
 {% extends "base.html" %} <!--this means that you are extending the base tempate -->
-{% block romm_dose_graph %} <!-- this is the name of the block below -->
+{% block room_dose_graph %} <!-- this is the name of the block below -->
 
 <script language="javascript">
-var graph = {{json_output | safe}};
+var graph = {{jsondata | safe}};
 console.log(graph);
 </script>
 
 
 <script src="//d3js.org/d3.v3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 <script>
 window.onload = function() {
-var width = 1200,
-    height = 500;
+var width = 600,
+    height = 600;
 
 var svg = d3.select("#graph_div").append("svg")
     .attr("width", width)
@@ -67,8 +68,13 @@ force.on("tick", function() {
 
 <div class="container">
      <div class="starter-template">
-       <div id='graph_div'>
-       </div>
+       <div class="row" style="height:100vh;">
+           <div class="col-md-10 col-md-offset-1">
+             <div id='graph_div'>
+             </div>
+           </div>
+        </div>
      </div>
-   </div>
+
+</div>
 {% endblock %}

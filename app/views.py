@@ -100,7 +100,7 @@ def get_room_sum(userid):
        return(json.dumps(jsonresponse))
 
 
-@app.route('/api/room_notification/<num_rooms>')
+@app.route('/api/room_notification/<num_rooms>', methods=['GET','POST'])
 def get_room_alerts(num_rooms):
        db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
        
@@ -163,7 +163,7 @@ def get_room_alerts(num_rooms):
        force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
        #with open('force_graph_data', 'w') as outfile:
        #  json.dump(force_graph_data, outfile)
-       return render_template("force_graph.html", jsondata = (json.dumps(force_graph_data)))
+       return render_template("force_graph_renderer.html", jsondata = (json.dumps(force_graph_data)))
 
 
        #jsonresponse = [{"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
