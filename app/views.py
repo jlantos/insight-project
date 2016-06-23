@@ -13,6 +13,11 @@ session = cluster.connect('rate_data')
 
 @app.route('/')
 @app.route('/index')
+@app.route('/email')
+
+def email():
+ return render_template("base.html")
+
 
 def create_room_links(filename):
   """ Reads a csv file with the "room1, room2" edges
