@@ -3,7 +3,7 @@ import json
 import yaml
 import os
 import time
-from kafka import KafkaProducer
+from kafka import KafkaProducer, KeyedProducer
 
 
 def main():
@@ -29,9 +29,11 @@ def main():
   ips = ips.split(', ')
 
   producer_s = (KafkaProducer(bootstrap_servers=ips, 
+#  producer_s = (KeyedProducer(bootstrap_servers=ips,
               value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
-  producer_r = (KafkaProducer(bootstrap_servers=ips, 
+  producer_r = (KafkaProducer(bootstrap_servers=ips,
+#  producer_r = (KeyedProducer(bootstrap_servers=ips, 
               value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
   # Read the file over and over and send the messages line by line
@@ -46,9 +48,9 @@ def main():
 
         # send the keyed messages to the separate topics
         if 'sens' in d:
-          producer_s.send(sys.argv[2],{d['sens']['uid']: jd})
+          producer_s.send(sys.argv[2], value = {d['sens']['uid']: jd})
         if 'room' in d:
-          producer_r.send(sys.argv[3],{d['room']['uid']: jd})
+          producer_r.send(sys.argv[3], value =  {d['room']['uid']: jd})
         
         time.sleep(wait_time)
 
