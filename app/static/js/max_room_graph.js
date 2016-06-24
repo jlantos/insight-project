@@ -1,29 +1,29 @@
 function getData() {
     $.get("/api/room_notification/100", function(graph) {
-        console.log(graph)
+        console.log(graph.hottest_room_values)
 	updateGraph(graph.hottest_room, graph.hottest_room_values)
     });
 };
 
 
-setInterval(getData, 15000);
+//setInterval(getData, 5000);
 
 
 var WIDTH = 600
-    HEIGHT = 600
+    HEIGHT = 300
     MARGINS = {
         top: 20,
         right: 20,
         bottom: 20,
         left: 20
-    },
+    }
 
-var svg = d3.select("max_room_graph").insert("svg")
+var vis = d3.select("#max_room_graph").insert("svg")
             .attr("width", WIDTH - MARGINS.right - MARGINS.left)
             .attr("height", HEIGHT - MARGINS.top - MARGINS.bottom);
 
 
-function updateGraph(room, data) {
+$(window).load(function updateGraph(room, data) {
 
   svg.selectAll(".line").remove();
 
@@ -56,7 +56,7 @@ function updateGraph(room, data) {
     .attr("class", "y axis")
     .attr("transform", "translate(" + (MARGINS.left) + ",0)")
     .call(yAxis);
-  var lineGen = d3.svg.line()
+/*  var lineGen = d3.svg.line()
     .x(function(d) {
         return xScale(d.time);
     })
@@ -70,4 +70,6 @@ function updateGraph(room, data) {
     .attr('stroke-width', 2)
     .attr('fill', 'none');
 
+*/
 }
+)
