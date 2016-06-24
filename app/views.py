@@ -163,12 +163,12 @@ def get_room_alerts(num_rooms):
        force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
        #with open('force_graph_data', 'w') as outfile:
        #  json.dump(force_graph_data, outfile)
-       return render_template("force_graph_renderer.html", jsondata = (json.dumps(force_graph_data)))
+       #return render_template("force_graph_renderer.html", jsondata = (json.dumps(force_graph_data)))
 
 
-       #jsonresponse = [{"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
-       #                 "alerts": alerts, "dose_rates": dose_list}] # for x in response_list]
-       #return jsonify(rates=jsonresponse)
+       jsonresponse = {"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
+                        "alerts": alerts, "dose_rates": dose_list, "force_graph": force_graph_data} # for x in response_list]
+       return jsonify(jsonresponse)
 
 
 @app.route('/api/user_notification/<num_users>_<num_rooms>')
