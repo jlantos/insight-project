@@ -5,7 +5,7 @@ function getData() {
     });
 };
 
-setInterval(getData, 10000);
+setInterval(getData, 15000);
 
 var width = 600
     height = 600
@@ -25,7 +25,12 @@ function updateGraph(graph) {
 	    .linkDistance(30)
 	    .size([width, height]);
 
-        svg = d3.select("#dose_graph").transition()//insert("svg")
+
+        svg.selectAll(".link").remove();
+        svg.selectAll(".node").remove();
+
+
+        //svg = d3.select("#dose_graph").transition()//insert("svg")
 	//    .attr("width", width)
 	//    .attr("height", height);
 
