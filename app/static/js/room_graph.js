@@ -1,7 +1,7 @@
 function getData() {
     $.get("/api/room_notification/100", function(graph) {
         console.log(graph)
-	updateGraph(graph.force_graph)
+        updateGraph(graph.force_graph)
     });
 };
 
@@ -16,52 +16,48 @@ var svg = d3.select("#dose_graph").insert("svg")
 
 
 function updateGraph(graph) {
-	
-        // White to red color scheme
-	var color = d3.scale.linear().domain([0, 150]).range(['#ffffff', '#9b0017']);
+  
+  // White to red color scheme
+  var color = d3.scale.linear().domain([0, 150]).range(['#ffffff', '#9b0017']);
 
-	var force = d3.layout.force()
-	    .charge(-120)
-	    .linkDistance(30)
-	    .size([width, height]);
-
-
-        svg.selectAll(".link").remove();
-        svg.selectAll(".node").remove();
+  var force = d3.layout.force()
+      .charge(-120)
+      .linkDistance(30)
+      .size([width, height]);
 
 
-        //svg = d3.select("#dose_graph").transition()//insert("svg")
-	//    .attr("width", width)
-	//    .attr("height", height);
+  svg.selectAll(".link").remove();
+  svg.selectAll(".node").remove();
 
-	force.nodes(graph.nodes)
-	     .links(graph.links)
-	     .start();
 
-	var link = svg.selectAll(".link")
-	      .data(graph.links)
-	    .enter().append("line")
-	      .attr("class", "link")
-	      .style("stroke-width", 1);
+  force.nodes(graph.nodes)
+       .links(graph.links)
+       .start();
 
-	var node = svg.selectAll(".node")
-	      .data(graph.nodes)
-	    .enter().append("circle")
-	      .attr("class", "node")
-	      .attr("r", 8)
-	      .style("fill", function(d) { return color(d.dose); })
-	      .call(force.drag);
+  var link = svg.selectAll(".link")
+        .data(graph.links)
+      .enter().append("line")
+        .attr("class", "link")
+        .style("stroke-width", 1);
 
-	node.append("title")
-	      .text(function(d) { return (d.name).toString().concat(': ', d.dose); });
+  var node = svg.selectAll(".node")
+        .data(graph.nodes)
+      .enter().append("circle")
+        .attr("class", "node")
+        .attr("r", 8)
+        .style("fill", function(d) { return color(d.dose); })
+        .call(force.drag);
 
-	force.on("tick", function() {
-	    link.attr("x1", function(d) { return d.source.x; })
-		.attr("y1", function(d) { return d.source.y; })
-		.attr("x2", function(d) { return d.target.x; })
-		.attr("y2", function(d) { return d.target.y; });
+  node.append("title")
+        .text(function(d) { return (d.name).toString().concat(': ', d.dose); });
 
-	    node.attr("cx", function(d) { return d.x; })
-		.attr("cy", function(d) { return d.y; });
-	});
+  force.on("tick", function() {
+      link.attr("x1", function(d) { return d.source.x; })
+    .attr("y1", function(d) { return d.source.y; })
+    .attr("x2", function(d) { return d.target.x; })
+    .attr("y2", function(d) { return d.target.y; });
+
+      node.attr("cx", function(d) { return d.x; })
+    .attr("cy", function(d) { return d.y; });
+  });
 }
