@@ -17,7 +17,7 @@ var svg = d3.select("#dose_graph").insert("svg")
 
 function updateGraph(graph) {
   
-        // White to red color scheme
+  // White to red color scheme
   var color = d3.scale.linear().domain([0, 150]).range(['#ffffff', '#9b0017']);
 
   var force = d3.layout.force()
@@ -26,13 +26,9 @@ function updateGraph(graph) {
       .size([width, height]);
 
 
-        svg.selectAll(".link").remove();
-        svg.selectAll(".node").remove();
+  svg.selectAll(".link").remove();
+  svg.selectAll(".node").remove();
 
-
-        //svg = d3.select("#dose_graph").transition()//insert("svg")
-  //    .attr("width", width)
-  //    .attr("height", height);
 
   force.nodes(graph.nodes)
        .links(graph.links)

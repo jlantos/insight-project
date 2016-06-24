@@ -1,86 +1,73 @@
 function getData() {
     $.get("/api/room_notification/100", function(graph) {
         console.log(graph)
-	updateGraph(graph.force_graph)
+	updateGraph(graph.hottest_room, graph.hottest_room_values)
     });
 };
 
 
+setInterval(getData, 15000);
 
 
-$(function () {
-    $(document).ready(function () {
-        Highcharts.setOptions({
-            global: {
-                useUTC: false
-            }
-        });
+var WIDTH = 600
+    HEIGHT = 600
+    MARGINS = {
+        top: 20,
+        right: 20,
+        bottom: 20,
+        left: 20
+    },
 
-        $('#max_room_graph').highcharts({
-            chart: {
-                type: 'spline',
-                animation: Highcharts.svg, // don't animate in old IE
-                marginRight: 10,
-                events: {
-                    load: function () {
+var svg = d3.select("max_room_graph").insert("svg")
+            .attr("width", WIDTH - MARGINS.right - MARGINS.left)
+            .attr("height", HEIGHT - MARGINS.top - MARGINS.bottom);
 
-                        // set up the updating of the chart each second
-                        var series = this.series[0];
-                        setInterval(function () {
-                            var x = (new Date()).getTime(), // current time
-                                y = Math.random();
-                            series.addPoint([x, y], true, true);
-                        }, 15000);
-                    }
-                }
-            },
-            title: {
-                text: 'Dose of the hottest room'
-            },
-            xAxis: {
-                type: 'datetime',
-                tickPixelInterval: 150
-            },
-            yAxis: {
-                title: {
-                    text: 'Dose'
-                },
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#808080'
-                }]
-            },
-            //tooltip: {
-            //    formatter: function () {
-            //        return '<b>' + this.series.name + '</b><br/>' +
-            //            Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
-            //            Highcharts.numberFormat(this.y, 2);
-            //    }
-            //},
-            legend: {
-                enabled: false
-            },
-            exporting: {
-                enabled: false
-            },
-            series: [{
-                name: 'Random data',
-                data: (function () {
-                    // generate an array of random data
-                    var data = [],
-                        time = (new Date()).getTime(),
-                        i;
 
-                    for (i = -19; i <= 0; i += 1) {
-                        data.push({
-                            x: time + i * 1000,
-                            y: Math.random()
-                        });
-                    }
-                    return data;
-                }())
-            }]
-        });
-    });
-});
+function updateGraph(room, data) {
+
+  svg.selectAll(".line").remove();
+
+  xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
+        return d.time;}), d3.max(data, function(d) {
+                            return d.time;
+                        })]),
+
+
+  yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([d3.min(data, function(d) {
+                            return d.dose_rate;
+                        }), d3.max(data, function(d) {
+                            return d.dose_rate;
+                        })]),
+  
+  xAxis = d3.svg.axis()
+  .scale(xScale),
+
+  yAxis = d3.svg.axis()
+ .scale(yScale)
+ .orient("left");
+
+
+
+  vis.append("svg:g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+    .call(xAxis);
+  vis.append("svg:g")
+    .attr("class", "y axis")
+    .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+    .call(yAxis);
+  var lineGen = d3.svg.line()
+    .x(function(d) {
+        return xScale(d.time);
+    })
+    .y(function(d) {
+        return yScale(d.dose_rate);
+    })
+    .interpolate("basis");  
+  vis.append('svg:path')
+    .attr('d', lineGen(data))
+    .attr('stroke', 'green')
+    .attr('stroke-width', 2)
+    .attr('fill', 'none');
+
+}
