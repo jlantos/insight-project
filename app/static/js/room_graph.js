@@ -7,12 +7,17 @@ function getData() {
 
 setInterval(getData, 10000);
 
+var width = 600
+    height = 600
+
+var svg = d3.select("#dose_graph").insert("svg")
+            .attr("width", width)
+            .attr("height", height);
+
 
 function updateGraph(graph) {
-	var width = 600,
-	    height = 600;
-
-	// White to red
+	
+        // White to red color scheme
 	var color = d3.scale.linear().domain([0, 150]).range(['#ffffff', '#9b0017']);
 
 	var force = d3.layout.force()
@@ -20,13 +25,9 @@ function updateGraph(graph) {
 	    .linkDistance(30)
 	    .size([width, height]);
 
-/*	var svg = d3.select("body").append("svg")
-	    .attr("width", width)
-	    .attr("height", height);
-*/
-	var svg = d3.select("#dose_graph").append("svg")
-	    .attr("width", width)
-	    .attr("height", height);
+        svg = d3.select("#dose_graph").transition()//insert("svg")
+	//    .attr("width", width)
+	//    .attr("height", height);
 
 	force.nodes(graph.nodes)
 	     .links(graph.links)
