@@ -1,53 +1,38 @@
-function InitChart() {
-    var data = [{
-        "sale": "202",
-        "year": "2000"
-    }, {
-        "sale": "215",
-        "year": "2002"
-    }, {
-        "sale": "179",
-        "year": "2004"
-    }, {
-        "sale": "199",
-        "year": "2006"
-    }, {
-        "sale": "134",
-        "year": "2008"
-    }, {
-        "sale": "176",
-        "year": "2010"
-    }];
-    var data2 = [{
-        "sale": "152",
-        "year": "2000"
-    }, {
-        "sale": "189",
-        "year": "2002"
-    }, {
-        "sale": "179",
-        "year": "2004"
-    }, {
-        "sale": "199",
-        "year": "2006"
-    }, {
-        "sale": "134",
-        "year": "2008"
-    }, {
-        "sale": "176",
-        "year": "2010"
-    }];
-    var vis = d3.select("#visualisation"),
-        WIDTH = 1000,
-        HEIGHT = 500,
+function getData_for_room() {
+    $.get("/api/room_notification/100", function(graph) {
+        console.log(graph)
+        updateRoomGraph( graph.hottest_room_values)
+    });
+};
+
+
+setInterval(getData_for_room, 5000);
+
+
+function updateRoomGraph(graph) {
+   
+    var vis = d3.select("#max_room_graph"),
+        WIDTH = 600,
+        HEIGHT = 300,
         MARGINS = {
             top: 20,
             right: 20,
             bottom: 20,
-            left: 50
-        },
-        xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([2000, 2010]),
-        yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([134, 215]),
+            left: 30
+        },   
+
+         xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0, 5000])//d3.min(data, function(d) {
+//             return d.year;
+//         }), d3.max(data, function(d) {
+//             return d.year;
+//         })]),
+         yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 200])//d3.min(data, function(d) {
+//             return d.sale;
+//          }), d3.max(data, function(d) {
+//             return d.sale;
+//          })]),
+
+
         xAxis = d3.svg.axis()
         .scale(xScale),
         yAxis = d3.svg.axis()
@@ -75,134 +60,7 @@ function InitChart() {
         .attr('stroke', 'green')
         .attr('stroke-width', 2)
         .attr('fill', 'none');
-    vis.append('svg:path')
-        .attr('d', lineGen(data2))
-        .attr('stroke', 'blue')
-        .attr('stroke-width', 2)
-        .attr('fill', 'none');
+    
 }
 
-InitChart();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-- MARGINS.right]).domain([d3.min(data, function(d) {
-
-
-
-
-, MARGINS.bottom]).domain([d3.min(data, function(d) {
-
-
-
-
-
-
-
-
-
-
-
-
-bottom) + ")")
-
-
-
-)")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-0%)";
-
-
-
-
-
-
-
-
-
-
-
-
-pacity);
-   d.active = active;
-)
-text(d.key);
-
-
-
-
-
+//InitChart();

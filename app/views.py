@@ -5,7 +5,7 @@ from cassandra.cluster import Cluster
 from flask import make_response
 import json
 from neo4jrestclient.client import GraphDatabase
-
+import numpy as np
 
 cluster = Cluster(['52.35.6.29', '52.35.6.29', '52.35.6.29', '52.24.174.234'])
 session = cluster.connect('rate_data')
@@ -95,9 +95,11 @@ def get_room_sum(userid):
        for val in response:
             response_list.append(val)
 
-       jsonresponse = [{"time": x.timestamp, "time_string": str(x.timestamp), "dose_rate": x.sum_rate, "dose_string": str(x.sum_rate)} for x in response_list]
+       jsonresponse = [{"year": (x.timestamp), "sale": (int(np.round(x.sum_rate)))} for x in response_list]
+#       jsonresponse = [{"time": x.timestamp, "year": str(x.timestamp), "dose_rate": x.sum_rate, "sale": str(np.round(x.sum_rate))} for x in response_list]
        #return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
-       return(json.dumps(jsonresponse))
+##       return(json.dumps(jsonresponse))
+       return((jsonresponse))
 
 
 @app.route('/api/room_notification/<num_rooms>', methods=['GET','POST'])
