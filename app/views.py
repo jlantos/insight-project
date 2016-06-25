@@ -95,7 +95,7 @@ def get_room_sum(userid):
        for val in response:
             response_list.append(val)
 
-       jsonresponse = [{"time": x.timestamp, "dose_rate": x.sum_rate} for x in response_list]
+       jsonresponse = [{"time": x.timestamp, "time_string": str(x.timestamp), "dose_rate": x.sum_rate, "dose_string": str(x.sum_rate)} for x in response_list]
        #return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
        return(json.dumps(jsonresponse))
 
