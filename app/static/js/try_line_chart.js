@@ -9,7 +9,7 @@ function getData_for_room() {
 setInterval(getData_for_room, 5000);
 
 
-function updateRoomGraph(graph) {
+function updateRoomGraph(data) {
    
     var vis = d3.select("#max_room_graph"),
         WIDTH = 600,
@@ -21,16 +21,15 @@ function updateRoomGraph(graph) {
             left: 30
         },   
 
-         xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0, 5000])//d3.min(data, function(d) {
-//             return d.year;
-//         }), d3.max(data, function(d) {
-//             return d.year;
-//         })]),
-         yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 200])//d3.min(data, function(d) {
-//             return d.sale;
-//          }), d3.max(data, function(d) {
-//             return d.sale;
-//          })]),
+         xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
+             return d.year;
+          }), d3.max(data, function(d) {
+             return d.year;
+         })]),
+         yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 
+             1.2 * 1.2 * d3.max(data, function(d) {
+             return d.sale;
+          })]),
 
 
         xAxis = d3.svg.axis()
