@@ -9,25 +9,25 @@ function getData_for_room() {
 setInterval(getData_for_room, 5000);
 
 var WIDTH = 600
-var HEIGHT = 600
+var HEIGHT = 300
 var MARGINS = {
       top: 20,
       right: 20,
       bottom: 20,
-      left: 30
+      left: 50
     }
 
 
 
-var svg = d3.select("#max_room_graph").insert("svg")
-            .attr("width", width)
-            .attr("height", height);
+var vis = d3.select("#max_room_graph").insert("svg")
+            .attr("width", WIDTH)
+            .attr("height", HEIGHT);
 
 
 
 function updateRoomGraph(data) {
    
-//        vis.selectAll(".path").remove();
+         vis.selectAll(".line").remove();
 
          xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
              return d.year;
@@ -54,6 +54,18 @@ function updateRoomGraph(data) {
         .attr("class", "y axis")
         .attr("transform", "translate(" + (MARGINS.left) + ",0)")
         .call(yAxis);
+
+
+    vis.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+         .attr("y", 6)
+         .attr("dy", "1.75em")
+        .attr("transform", "rotate(-90)")
+        .text("life expectancy (years)");
+
+
+
     var lineGen = d3.svg.line()
         .x(function(d) {
             return xScale(d.year);
@@ -62,7 +74,9 @@ function updateRoomGraph(data) {
             return yScale(d.sale);
         })
         .interpolate("basis");
-    vis.append('svg:path')
+
+    vis.append('svg:path')      
+        .attr("class", "line")
         .attr('d', lineGen(data))
         .attr('stroke', 'green')
         .attr('stroke-width', 2)
