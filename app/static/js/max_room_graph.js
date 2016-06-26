@@ -33,6 +33,7 @@ function updateRoomGraph(data) {
   vis.selectAll(".line").remove();
   vis.selectAll(".axis").remove();
   vis.selectAll(".label").remove();
+  vis.selectAll(".title").remove();
 
 
 
@@ -84,6 +85,15 @@ function updateRoomGraph(data) {
     .attr("dy", "1em")
     .style("text-anchor", "middle")
     .text("dose");
+
+  // Title
+  vis.append("text")
+    .attr("class", "title")
+    .attr("x", (WIDTH / 2))
+    .attr("y",  MARGINS.top)
+    .attr("text-anchor", "middle")
+    .style("font-size", "16px")
+    .text("Room with the maximum current dose");
 
     
   // Draw line

@@ -152,7 +152,7 @@ def get_room_alerts(num_rooms):
            alert = {"room": room, "users_to_alert": users_to_alert}
            alerts.append(alert)
   
-         dose_list.append(response_list[0].sum_rate)
+         dose_list.append(int(response_list[0].sum_rate))
          times.append(response_list[0].timestamp)
 
        avg_time = sum(times) / (len(times))
@@ -163,13 +163,18 @@ def get_room_alerts(num_rooms):
        # Create data for d3 force-directed graph
        room_file = str(num_rooms) + "_rooms"
        force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
+
+       # Calculate histogram of dose values
+       dose_value, frequency = np.histogram(dose_list, bins = range(np.min(dose_list), np.max(dose_list)+2))
+       histogram_data = {"value": list(dose_value), "freq": list(frequency)}
+      
        #with open('force_graph_data', 'w') as outfile:
        #  json.dump(force_graph_data, outfile)
        #return render_template("force_graph_renderer.html", jsondata = (json.dumps(force_graph_data)))
 
 
        jsonresponse = {"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
-                        "alerts": alerts, "dose_rates": dose_list, "force_graph": force_graph_data} # for x in response_list]
+                        "alerts": alerts, "dose_rates": histogram_data, "force_graph": force_graph_data} # for x in response_list]
        return jsonify(jsonresponse)
 
 

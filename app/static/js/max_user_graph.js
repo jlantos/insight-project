@@ -12,7 +12,7 @@ var width = 600
 var height = 300
  
 var MARGINS = {
-      top: 20,
+      top: 30,
       right: 20,
       bottom: 20,
       left: 50
@@ -33,6 +33,7 @@ function updateUserGraph(data) {
   vis2.selectAll(".line").remove();
   vis2.selectAll(".axis").remove();
   vis2.selectAll(".label").remove();
+  vis2.selectAll(".title").remove();
 
 
 
@@ -84,6 +85,15 @@ function updateUserGraph(data) {
     .attr("dy", "1em")
     .style("text-anchor", "middle")
     .text("dose");
+
+  // Title
+  vis2.append("text")
+    .attr("class", "title")
+    .attr("x", (WIDTH / 2))             
+    .attr("y",  MARGINS.top)
+    .attr("text-anchor", "middle")  
+    .style("font-size", "16px")   
+    .text("User with the maximum current dose");
 
     
   // Draw line
