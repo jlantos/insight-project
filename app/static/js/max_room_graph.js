@@ -1,104 +1,109 @@
-function getDataroom() {
+function getData_for_room() {
     $.get("/api/room_notification/100", function(graph) {
-        console.log(graph.hottest_room_values)
-	updateGraph_roommax(graph.hottest_room, graph.hottest_room_values)
+   //     console.log(graph)
+        updateRoomGraph( graph.hottest_room_values)
     });
 };
 
 
-//setInterval(getData, 5000);
+setInterval(getData_for_room, 5000);
 
-
-var WIDTH = 600
-var HEIGHT = 300
+var width = 600
+var height = 300
+ 
 var MARGINS = {
-        top: 50,
-        right: 50,
-        bottom: 50,
-        left: 50
+      top: 20,
+      right: 20,
+      bottom: 20,
+      left: 50
     }
 
+var WIDTH = width - MARGINS.left - MARGINS.right;
+var HEIGHT = height - MARGINS.top - MARGINS.bottom;
+
+
 var vis = d3.select("#max_room_graph").insert("svg")
-            .attr("width", WIDTH - MARGINS.right - MARGINS.left)
-            .attr("height", HEIGHT - MARGINS.top - MARGINS.bottom);
+  .attr("width", width)
+  .attr("height", height);
 
 
-$(window).load(getDataroom())
 
-function updateGraph_roommax(room, data) {
-
+function updateRoomGraph(data) {
+   
   vis.selectAll(".line").remove();
-  vis.selectAll(".x_axis").remove();
-  vis.selectAll(".y_axis").remove();
-  vis.selectAll(".label".remove(); 
+  vis.selectAll(".axis").remove();
+  vis.selectAll(".label").remove();
 
-  // Recalc axis limits
+
+
   xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
-        return d.time_string;}), d3.max(data, function(d) {
-                            return d.time_string;
-                        })]),
+    return d.time;
+  }), d3.max(data, function(d) {
+    return d.time;
+  })]),
+   
 
-//  console.log(data.time)
-  yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([d3.min(data, function(d) {
-                            return d.dose_string;
-                        }), d3.max(data, function(d) {
-                            return d.dose_string;
-                        })]),
-  
+  yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 
+    1.2 * 1.2 * d3.max(data, function(d) {
+    return d.dose;
+  })]),
+
+
   xAxis = d3.svg.axis()
-  .scale(xScale),
-
+    .scale(xScale),
   yAxis = d3.svg.axis()
-  .scale(yScale)
+     .scale(yScale)
   .orient("left");
+  
 
-
-  // Draw x axis
+  // Draw x axis  
   vis.append("svg:g")
-    .attr("class", "x_axis")
+    .attr("class", "axis")
     .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
     .call(xAxis);
 
   vis.append("text")      // text label for the x axis
     .attr("class", "label")
     .attr("x", WIDTH / 2 )
-    .attr("y",  HEIGHT + MARGIN.bottom)
+    .attr("y",  HEIGHT + MARGINS.bottom)
     .style("text-anchor", "middle")
     .text("time");
 
 
-  // Drax y axis
+  // Draw y axis
   vis.append("svg:g")
-    .attr("class", "y_axis")
+    .attr("class", "axis")
     .attr("transform", "translate(" + (MARGINS.left) + ",0)")
     .call(yAxis);
-
 
   vis.append("text")
     .attr("class", "label")
     .attr("transform", "rotate(-90)")
-    .attr("y", 0 – MARGIN.left)
-    .attr("x",0 - (HEIGHT / 2))
+    .attr("y", 0) // - MARGINS.left)
+    .attr("x", 0 - (HEIGHT / 2))
     .attr("dy", "1em")
     .style("text-anchor", "middle")
-    .text("Dose");
+    .text("dose");
 
-
+    
   // Draw line
+
   var lineGen = d3.svg.line()
     .x(function(d) {
-        return xScale(d.time);
-    })
+    return xScale(d.time);
+  })
     .y(function(d) {
-        return yScale(d.dose_rate);
-    })
-    .interpolate("basis");  
+    return yScale(d.dose);
+  })
+    .interpolate("basis");
 
-  vis.append('svg:path')
+  vis.append('svg:path')      
+    .attr("class", "line")
     .attr('d', lineGen(data))
-    .attr('stroke', 'green')
+    .attr('stroke', 'blue')
     .attr('stroke-width', 2)
     .attr('fill', 'none');
-
+    
 }
 
+//InitChart();

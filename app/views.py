@@ -83,9 +83,9 @@ def get_user_sum(userid):
        for val in response:
             response_list.append(val)
 
-       jsonresponse = [{"time": x.timestamp, "dose_rate": x.sum_rate} for x in response_list]
+       jsonresponse = [{"time": x.timestamp, "dose": int(np.round(x.sum_rate))} for x in response_list]
        #return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
-       return(json.dumps(jsonresponse))
+       return(jsonresponse)
 
 @app.route('/api/room/<userid>')
 def get_room_sum(userid):
@@ -95,11 +95,11 @@ def get_room_sum(userid):
        for val in response:
             response_list.append(val)
 
-       jsonresponse = [{"year": (x.timestamp), "sale": (int(np.round(x.sum_rate)))} for x in response_list]
+       jsonresponse = [{"time": (x.timestamp), "dose": int(np.round(x.sum_rate))} for x in response_list]
 #       jsonresponse = [{"time": x.timestamp, "year": str(x.timestamp), "dose_rate": x.sum_rate, "sale": str(np.round(x.sum_rate))} for x in response_list]
        #return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
 ##       return(json.dumps(jsonresponse))
-       return((jsonresponse))
+       return(jsonresponse)
 
 
 @app.route('/api/room_notification/<num_rooms>', methods=['GET','POST'])
@@ -255,5 +255,5 @@ def get_user_alerts(num_users, num_rooms):
 
        jsonresponse = [{"avg_time": avg_time, "hottest_user": most_active_user, "hottest_user_values": most_active_user_values,
                         "alerts": alerts, "dose_rates": dose_list}]
-       return jsonify(rates=jsonresponse)
+       return jsonify(jsonresponse)
 
