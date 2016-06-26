@@ -45,7 +45,7 @@ function updateUserGraph(data) {
    
 
   yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 
-    1.2 * 1.2 * d3.max(data, function(d) {
+    1.2 * d3.max(data, function(d) {
     return d.dose;
   })]),
 

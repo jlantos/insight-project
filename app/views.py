@@ -166,7 +166,9 @@ def get_room_alerts(num_rooms):
 
        # Calculate histogram of dose values
        dose_value, frequency = np.histogram(dose_list, bins = range(np.min(dose_list), np.max(dose_list)+2))
-       histogram_data = {"value": list(dose_value), "freq": list(frequency)}
+       histogram_data = []
+       for i in range(0, len(dose_value)):
+         histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
       
        #with open('force_graph_data', 'w') as outfile:
        #  json.dump(force_graph_data, outfile)
@@ -174,7 +176,7 @@ def get_room_alerts(num_rooms):
 
 
        jsonresponse = {"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
-                        "alerts": alerts, "dose_rates": histogram_data, "force_graph": force_graph_data} # for x in response_list]
+                        "alerts": alerts, "dose": dose_list, "dose_rates": histogram_data, "force_graph": force_graph_data} # for x in response_list]
        return jsonify(jsonresponse)
 
 

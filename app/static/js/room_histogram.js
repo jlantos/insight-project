@@ -1,6 +1,6 @@
 function getData_for_room_hist() {
     $.get("/api/room_notification/100", function(graph) {
-        console.log(graph)
+        console.log(graph.dose_rates)
         updateRoomGraphHist( graph.dose_rates)
     });
 };
@@ -30,22 +30,20 @@ var vis3 = d3.select("#room_histogram").insert("svg")
 
 function updateRoomGraphHist(data) {
    
-  vis3.selectAll(".bar").remove();
   vis3.selectAll(".axis").remove();
   vis3.selectAll(".label").remove();
   vis3.selectAll(".title").remove();
 
 
-
-  xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
+ xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
     return d.value;
   }), d3.max(data, function(d) {
     return d.value;
   })]),
-   
 
-  yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 
-    1.2 * 1.2 * d3.max(data, function(d) {
+
+  yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0,
+    1.2 * d3.max(data, function(d) {
     return d.freq;
   })]),
 
@@ -55,7 +53,7 @@ function updateRoomGraphHist(data) {
   yAxis = d3.svg.axis()
      .scale(yScale)
   .orient("left");
-  
+
 
   // Draw x axis  
   vis3.append("svg:g")
@@ -68,8 +66,7 @@ function updateRoomGraphHist(data) {
     .attr("x", WIDTH / 2 )
     .attr("y",  HEIGHT + MARGINS.bottom)
     .style("text-anchor", "middle")
-    .text("dose");
-
+    .text("dose value");
 
   // Draw y axis
   vis3.append("svg:g")
@@ -93,16 +90,33 @@ function updateRoomGraphHist(data) {
     .attr("y",  MARGINS.top)
     .attr("text-anchor", "middle")
     .style("font-size", "16px")
-    .text("Room dose distribution");
+    .text("Room dose distruibution");
 
-    
-  vis3.selectAll(".bar")
-      .data(data)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return x(d.value); })
-      .attr("width", x.rangeBands())
-      .attr("y", function(d) { return y(d.freq); })
-      .attr("height", function(d) { return HEIGHT - y(d.freq); });
-    
+
+  // Draw line
+
+  var lineGen = d3.svg.line()
+    .x(function(d) {
+    return xScale(d.value);
+  })
+    .y(function(d) {
+    return yScale(d.freq);
+  })
+ .interpolate("basis");
+
+                            
+// vis3.selectAll("dot")
+//        .data(data)
+//    .enter().append("circle")
+//        .attr("r", 3.5)
+//        .attr("cx", function(d) { return xScale(d.value); })
+//        .attr("cy", function(d) { return yScale(d.freq); });
+ 
+  vis3.append('svg:path')
+    .attr("class", "line")
+    .attr('d', lineGen(data))
+    .attr('stroke', 'blue')
+    .attr('stroke-width', 2)
+    .attr('fill', 'none');
+
 }
