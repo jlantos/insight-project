@@ -1,6 +1,6 @@
 function getData_for_user() {
     $.get("/api/user_notification/1000_100", function(graph) {
-        console.log(graph)
+       // console.log(graph)
         updateUserGraph(graph.hottest_user_values)
     });
 };
@@ -22,7 +22,7 @@ var WIDTH = width - MARGINS.left - MARGINS.right;
 var HEIGHT = height - MARGINS.top - MARGINS.bottom;
 
 
-var vis = d3.select("#max_user_graph").insert("svg")
+var vis2 = d3.select("#max_user_graph").insert("svg")
   .attr("width", width)
   .attr("height", height);
 
@@ -30,9 +30,9 @@ var vis = d3.select("#max_user_graph").insert("svg")
 
 function updateUserGraph(data) {
    
-  vis.selectAll(".line").remove();
-  vis.selectAll(".axis").remove();
-  vis.selectAll(".label").remove();
+  vis2.selectAll(".line").remove();
+  vis2.selectAll(".axis").remove();
+  vis2.selectAll(".label").remove();
 
 
 
@@ -57,12 +57,12 @@ function updateUserGraph(data) {
   
 
   // Draw x axis  
-  vis.append("svg:g")
+  vis2.append("svg:g")
     .attr("class", "axis")
     .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
     .call(xAxis);
 
-  vis.append("text")      // text label for the x axis
+  vis2.append("text")      // text label for the x axis
     .attr("class", "label")
     .attr("x", WIDTH / 2 )
     .attr("y",  HEIGHT + MARGINS.bottom)
@@ -71,12 +71,12 @@ function updateUserGraph(data) {
 
 
   // Draw y axis
-  vis.append("svg:g")
+  vis2.append("svg:g")
     .attr("class", "axis")
     .attr("transform", "translate(" + (MARGINS.left) + ",0)")
     .call(yAxis);
 
-  vis.append("text")
+  vis2.append("text")
     .attr("class", "label")
     .attr("transform", "rotate(-90)")
     .attr("y", 0) // - MARGINS.left)
@@ -97,7 +97,7 @@ function updateUserGraph(data) {
   })
     .interpolate("basis");
 
-  vis.append('svg:path')      
+  vis2.append('svg:path')      
     .attr("class", "line")
     .attr('d', lineGen(data))
     .attr('stroke', 'blue')

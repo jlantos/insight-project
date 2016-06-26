@@ -253,7 +253,7 @@ def get_user_alerts(num_users, num_rooms):
 
        most_active_user_values = get_user_sum(most_active_user)
 
-       jsonresponse = [{"avg_time": avg_time, "hottest_user": most_active_user, "hottest_user_values": most_active_user_values,
-                        "alerts": alerts, "dose_rates": dose_list}]
+       jsonresponse = {"avg_time": avg_time, "hottest_user": most_active_user, "hottest_user_values": most_active_user_values,
+                        "alerts": alerts, "dose_rates": dose_list}
        return jsonify(jsonresponse)
 
