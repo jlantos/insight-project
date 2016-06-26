@@ -165,9 +165,11 @@ def get_room_alerts(num_rooms):
        force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
 
        # Calculate histogram of dose values
-       dose_value, frequency = np.histogram(dose_list, bins = range(np.min(dose_list), np.max(dose_list)+2))
+       frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))#np.min(dose_list), np.max(dose_list)+2))
        histogram_data = []
-       for i in range(0, len(dose_value)):
+       #print dose_value
+       #print frequency
+       for i in range(0, len(frequency)):
          histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
       
        #with open('force_graph_data', 'w') as outfile:
