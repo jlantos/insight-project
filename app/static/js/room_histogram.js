@@ -13,7 +13,7 @@ var height = 300
  
 var MARGINS = {
       top: 20,
-      right: 20,
+      right: 30,
       bottom: 20,
       left: 50
     }
@@ -104,7 +104,7 @@ function updateRoomGraphHist(data) {
     .y(function(d) {
     return yScale(d.freq);
   })
- .interpolate("basis");
+ .interpolate("linear");
  
   vis3.append('svg:path')
     .attr("class", "line")

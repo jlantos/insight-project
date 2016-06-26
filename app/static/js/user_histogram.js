@@ -8,23 +8,23 @@ function getData_for_user_hist() {
 
 setInterval(getData_for_user_hist, 5000);
 
-var width = 600
-var height = 300
+var WIDTH = 600
+var HEIGHT = 300
  
 var MARGINS = {
       top: 20,
-      right: 20,
+      right: 30,
       bottom: 20,
       left: 50
     }
 
-var WIDTH = width - MARGINS.left - MARGINS.right;
-var HEIGHT = height - MARGINS.top - MARGINS.bottom;
+//var WIDTH = width - MARGINS.left - MARGINS.right;
+//var HEIGHT = height - MARGINS.top - MARGINS.bottom;
 
 
 var vis4 = d3.select("#user_histogram").insert("svg")
-  .attr("width", width)
-  .attr("height", height);
+  .attr("width", WIDTH)
+  .attr("height", HEIGHT);
 
 
 
@@ -44,7 +44,7 @@ function updateUserGraphHist(data) {
   })]),
 
 
-  yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0,
+  yScale = d3.scale.log().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([1,
     d3.max(data, function(d) {
     return d.freq;
   })]),
@@ -74,16 +74,16 @@ function updateUserGraphHist(data) {
   vis4.append("svg:g")
     .attr("class", "axis")
     .attr("transform", "translate(" + (MARGINS.left) + ",0)")
-    .call(yAxis);
-
+    .call(yAxis)
+     
   vis4.append("text")
     .attr("class", "label")
     .attr("transform", "rotate(-90)")
-    .attr("y", 0) // - MARGINS.left)
+    .attr("y", 0 - (MARGINS.right / 3)) // - MARGINS.left)
     .attr("x", 0 - (HEIGHT / 2))
     .attr("dy", "1em")
     .style("text-anchor", "middle")
-    .text("n");
+    .text("n (log scale)");
 
   // Title
   vis4.append("text")
@@ -104,7 +104,7 @@ function updateUserGraphHist(data) {
     .y(function(d) {
     return yScale(d.freq);
   })
- .interpolate("basis");
+ .interpolate("linear");
  
   vis4.append('svg:path')
     .attr("class", "line")

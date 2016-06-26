@@ -8,23 +8,23 @@ function getData_for_room() {
 
 setInterval(getData_for_room, 5000);
 
-var width = 600
-var height = 300
+var WIDTH = 600
+var HEIGHT = 300
  
 var MARGINS = {
       top: 20,
-      right: 20,
+      right: 30,
       bottom: 20,
       left: 50
     }
 
-var WIDTH = width - MARGINS.left - MARGINS.right;
-var HEIGHT = height - MARGINS.top - MARGINS.bottom;
+//var WIDTH = width - MARGINS.left - MARGINS.right;
+//var HEIGHT = height - MARGINS.top - MARGINS.bottom;
 
 
 var vis = d3.select("#max_room_graph").insert("svg")
-  .attr("width", width)
-  .attr("height", height);
+  .attr("width", WIDTH)
+  .attr("height", HEIGHT);
 
 
 

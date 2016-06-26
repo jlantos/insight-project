@@ -266,8 +266,10 @@ def get_user_alerts(num_users, num_rooms):
        frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))#np.min(dose_list), np.max(dose_list)+2))
        histogram_data = []
        for i in range(0, len(frequency)):
-         histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
-
+         if frequency[i] > 0:
+           histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
+         else:
+           histogram_data.append({"value": dose_value[i], "freq": 1})
 
 
        jsonresponse = {"avg_time": avg_time, "hottest_user": most_active_user, "hottest_user_values": most_active_user_values,
