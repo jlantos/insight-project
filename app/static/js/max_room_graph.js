@@ -10,15 +10,15 @@ function getDataroom() {
 
 
 var WIDTH = 600
-var    HEIGHT = 300
-var    MARGINS = {
-        top: 20,
-        right: 20,
-        bottom: 20,
-        left: 20
+var HEIGHT = 300
+var MARGINS = {
+        top: 50,
+        right: 50,
+        bottom: 50,
+        left: 50
     }
 
-var svg = d3.select("#max_room_graph").insert("svg")
+var vis = d3.select("#max_room_graph").insert("svg")
             .attr("width", WIDTH - MARGINS.right - MARGINS.left)
             .attr("height", HEIGHT - MARGINS.top - MARGINS.bottom);
 
@@ -27,8 +27,12 @@ $(window).load(getDataroom())
 
 function updateGraph_roommax(room, data) {
 
-  svg.selectAll(".line").remove();
+  vis.selectAll(".line").remove();
+  vis.selectAll(".x_axis").remove();
+  vis.selectAll(".y_axis").remove();
+  vis.selectAll(".label".remove(); 
 
+  // Recalc axis limits
   xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
         return d.time_string;}), d3.max(data, function(d) {
                             return d.time_string;
@@ -45,19 +49,42 @@ function updateGraph_roommax(room, data) {
   .scale(xScale),
 
   yAxis = d3.svg.axis()
- .scale(yScale)
- .orient("left");
+  .scale(yScale)
+  .orient("left");
 
 
-
-  svg.append("svg:g")
-    .attr("class", "x axis")
+  // Draw x axis
+  vis.append("svg:g")
+    .attr("class", "x_axis")
     .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
     .call(xAxis);
-  svg.append("svg:g")
-    .attr("class", "y axis")
+
+  vis.append("text")      // text label for the x axis
+    .attr("class", "label")
+    .attr("x", WIDTH / 2 )
+    .attr("y",  HEIGHT + MARGIN.bottom)
+    .style("text-anchor", "middle")
+    .text("time");
+
+
+  // Drax y axis
+  vis.append("svg:g")
+    .attr("class", "y_axis")
     .attr("transform", "translate(" + (MARGINS.left) + ",0)")
     .call(yAxis);
+
+
+  vis.append("text")
+    .attr("class", "label")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 – MARGIN.left)
+    .attr("x",0 - (HEIGHT / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Dose");
+
+
+  // Draw line
   var lineGen = d3.svg.line()
     .x(function(d) {
         return xScale(d.time);
@@ -66,12 +93,12 @@ function updateGraph_roommax(room, data) {
         return yScale(d.dose_rate);
     })
     .interpolate("basis");  
-  svg.append('svg:path')
+
+  vis.append('svg:path')
     .attr('d', lineGen(data))
     .attr('stroke', 'green')
     .attr('stroke-width', 2)
     .attr('fill', 'none');
-
 
 }
 
