@@ -262,7 +262,15 @@ def get_user_alerts(num_users, num_rooms):
 
        most_active_user_values = get_user_sum(most_active_user)
 
+       # Calculate histogram of dose values
+       frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))#np.min(dose_list), np.max(dose_list)+2))
+       histogram_data = []
+       for i in range(0, len(frequency)):
+         histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
+
+
+
        jsonresponse = {"avg_time": avg_time, "hottest_user": most_active_user, "hottest_user_values": most_active_user_values,
-                        "alerts": alerts, "dose_rates": dose_list}
+                        "alerts": alerts, "dose_rates": histogram_data}
        return jsonify(jsonresponse)
 

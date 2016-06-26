@@ -1,6 +1,6 @@
 function getData_for_room_hist() {
     $.get("/api/room_notification/100", function(graph) {
-        console.log(graph.dose_rates)
+       // console.log(graph.dose_rates)
         updateRoomGraphHist( graph.dose_rates)
     });
 };
@@ -33,9 +33,11 @@ function updateRoomGraphHist(data) {
   vis3.selectAll(".axis").remove();
   vis3.selectAll(".label").remove();
   vis3.selectAll(".title").remove();
+  vis3.selectAll(".line").remove();
 
-
- xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
+  
+  // Scale axes
+  xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
     return d.value;
   }), d3.max(data, function(d) {
     return d.value;
@@ -103,14 +105,6 @@ function updateRoomGraphHist(data) {
     return yScale(d.freq);
   })
  .interpolate("basis");
-
-                            
-// vis3.selectAll("dot")
-//        .data(data)
-//    .enter().append("circle")
-//        .attr("r", 3.5)
-//        .attr("cx", function(d) { return xScale(d.value); })
-//        .attr("cy", function(d) { return yScale(d.freq); });
  
   vis3.append('svg:path')
     .attr("class", "line")
