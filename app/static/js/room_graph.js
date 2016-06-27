@@ -49,7 +49,7 @@ function updateGraph(graph) {
         .call(force.drag);
 
   node.append("title")
-        .text(function(d) { return (d.name).toString().concat(': ', d.dose); });
+        .text(function(d) { return "Room: ".concat(d.name,', dose: ', d.dose); });
 
   force.on("tick", function() {
       link.attr("x1", function(d) { return d.source.x; })

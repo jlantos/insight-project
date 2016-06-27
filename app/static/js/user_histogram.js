@@ -1,6 +1,6 @@
 function getData_for_user_hist() {
     $.get("/api/user_notification/1000_100", function(graph) {
-        console.log(graph.dose_rates)
+//        console.log(graph.dose_rates)
         updateUserGraphHist( graph.dose_rates)
     });
 };
