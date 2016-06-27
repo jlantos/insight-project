@@ -1,7 +1,7 @@
 function getData_for_user() {
     $.get("/api/user_notification/1000_100", function(graph) {
        // console.log(graph)
-        updateUserGraph(graph.hottest_user_values)
+        updateUserGraph(graph.hottest_user, graph.hottest_user_values)
     });
 };
 
@@ -28,7 +28,7 @@ var vis2 = d3.select("#max_user_graph").insert("svg")
 
 
 
-function updateUserGraph(data) {
+function updateUserGraph(user, data) {
    
   vis2.selectAll(".line").remove();
   vis2.selectAll(".axis").remove();
@@ -93,7 +93,7 @@ function updateUserGraph(data) {
     .attr("y",  MARGINS.top)
     .attr("text-anchor", "middle")  
     .style("font-size", "16px")   
-    .text("User with the maximum current dose");
+    .text("User " + user.toString() + " (maximum current dose)");
 
     
   // Draw line

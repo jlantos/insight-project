@@ -1,7 +1,7 @@
 function getData_for_room() {
     $.get("/api/room_notification/100", function(graph) {
    //     console.log(graph)
-        updateRoomGraph( graph.hottest_room_values)
+        updateRoomGraph(graph.hottest_room, graph.hottest_room_values)
     });
 };
 
@@ -29,7 +29,7 @@ var vis = d3.select("#max_room_graph").insert("svg")
 
 
 
-function updateRoomGraph(data) {
+function updateRoomGraph(room, data) {
    
   vis.selectAll(".line").remove();
   vis.selectAll(".axis").remove();
@@ -94,7 +94,7 @@ function updateRoomGraph(data) {
     .attr("y",  MARGINS.top)
     .attr("text-anchor", "middle")
     .style("font-size", "16px")
-    .text("Room with the maximum current dose");
+    .text("Room " + room.toString() + " (maximum current dose)");
 
     
   // Draw line
