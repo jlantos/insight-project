@@ -48,9 +48,9 @@ def main():
 
         # send the keyed messages to the separate topics
         if 'sens' in d:
-          producer_s.send(sys.argv[2], value = {d['sens']['uid']: jd})
+          producer_s.send(sys.argv[2], {d['sens']['uid']: jd})
         if 'room' in d:
-          producer_r.send(sys.argv[3], value =  {d['room']['uid']: jd})
+          producer_r.send(sys.argv[3], {d['room']['uid']: jd})
         
         time.sleep(wait_time)
 
