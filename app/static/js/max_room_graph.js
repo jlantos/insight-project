@@ -6,17 +6,18 @@ function getData_for_room() {
 };
 
 
+window.onload = getData_for_room()
 setInterval(getData_for_room, 5000);
 
-var WIDTH = 600
-var HEIGHT = 300
+//var WIDTH = 600
+//var HEIGHT = 300
  
-var MARGINS = {
-      top: 20,
-      right: 30,
-      bottom: 20,
-      left: 50
-    }
+//var MARGINS = {
+//      top: 20,
+//      right: 30,
+//      bottom: 20,
+//      left: 50
+//    }
 
 //var WIDTH = width - MARGINS.left - MARGINS.right;
 //var HEIGHT = height - MARGINS.top - MARGINS.bottom;
@@ -60,13 +61,13 @@ function updateRoomGraph(data) {
   // Draw x axis  
   vis.append("svg:g")
     .attr("class", "axis")
-    .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+    .attr("transform", "translate(0," + (HEIGHT - MARGINS.top) + ")")
     .call(xAxis);
 
   vis.append("text")      // text label for the x axis
     .attr("class", "label")
     .attr("x", WIDTH / 2 )
-    .attr("y",  HEIGHT + MARGINS.bottom)
+    .attr("y",  HEIGHT -10)
     .style("text-anchor", "middle")
     .text("time");
 
@@ -80,7 +81,7 @@ function updateRoomGraph(data) {
   vis.append("text")
     .attr("class", "label")
     .attr("transform", "rotate(-90)")
-    .attr("y", 0) // - MARGINS.left)
+    .attr("y", 10) // - MARGINS.left)
     .attr("x", 0 - (HEIGHT / 2))
     .attr("dy", "1em")
     .style("text-anchor", "middle")

@@ -6,17 +6,18 @@ function getData_for_room_hist() {
 };
 
 
+window.onload = getData_for_room_hist();
 setInterval(getData_for_room_hist, 5000);
 
-var WIDTH = 600
-var HEIGHT = 300
+//var WIDTH = 600
+//var HEIGHT = 300
  
-var MARGINS = {
-      top: 20,
-      right: 30,
-      bottom: 20,
-      left: 50
-    }
+//var MARGINS = {
+//      top: 20,
+//      right: 30,
+//      bottom: 20,
+//      left: 50
+//    }
 
 //var WIDTH = width - MARGINS.left - MARGINS.right;
 //var HEIGHT = height - MARGINS.top - MARGINS.bottom;
@@ -60,13 +61,13 @@ function updateRoomGraphHist(data) {
   // Draw x axis  
   vis3.append("svg:g")
     .attr("class", "axis")
-    .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+    .attr("transform", "translate(0," + (HEIGHT - MARGINS.top) + ")")
     .call(xAxis);
 
   vis3.append("text")      // text label for the x axis
     .attr("class", "label")
     .attr("x", WIDTH / 2 )
-    .attr("y",  HEIGHT + MARGINS.bottom)
+    .attr("y",  HEIGHT - 10)
     .style("text-anchor", "middle")
     .text("dose value");
 

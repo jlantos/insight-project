@@ -5,22 +5,19 @@ function getData_for_user_hist() {
     });
 };
 
+window.onload = getData_for_user_hist();
 
-setInterval(getData_for_user_hist, 5000);
+setInterval(getData_for_user_hist(), 5000);
 
 var WIDTH = 600
 var HEIGHT = 300
  
 var MARGINS = {
-      top: 20,
-      right: 30,
-      bottom: 20,
-      left: 50
+      top: 50,
+      right: 10,
+      bottom: 30,
+      left: 70
     }
-
-//var WIDTH = width - MARGINS.left - MARGINS.right;
-//var HEIGHT = height - MARGINS.top - MARGINS.bottom;
-
 
 var vis4 = d3.select("#user_histogram").insert("svg")
   .attr("width", WIDTH)
@@ -60,13 +57,13 @@ function updateUserGraphHist(data) {
   // Draw x axis  
   vis4.append("svg:g")
     .attr("class", "axis")
-    .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+    .attr("transform", "translate(0," + (HEIGHT - MARGINS.top) + ")")
     .call(xAxis);
 
   vis4.append("text")      // text label for the x axis
     .attr("class", "label")
     .attr("x", WIDTH / 2 )
-    .attr("y",  HEIGHT + MARGINS.bottom)
+    .attr("y",  HEIGHT - 10 )
     .style("text-anchor", "middle")
     .text("dose value");
 
@@ -79,7 +76,7 @@ function updateUserGraphHist(data) {
   vis4.append("text")
     .attr("class", "label")
     .attr("transform", "rotate(-90)")
-    .attr("y", 0 - (MARGINS.right / 3)) // - MARGINS.left)
+    .attr("y", 10 ) // - MARGINS.left)
     .attr("x", 0 - (HEIGHT / 2))
     .attr("dy", "1em")
     .style("text-anchor", "middle")
