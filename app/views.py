@@ -12,7 +12,7 @@ session = cluster.connect('rate_data')
 
 
 @app.route('/')
-@app.route('/index')
+#@app.route('/index')
 @app.route('/email')
 
 def email():
@@ -44,11 +44,9 @@ def create_room_values(dose_list):
   return room_list
 
 
-
+@app.route('/index')
 def index():
-  user = { 'nickname': 'Miguel' } # fake user
-  mylist = [1,2,3,4]
-  return render_template("index.html", title = 'Home', user = user, mylist = mylist)
+   return render_template("index.html")
 
 
 @app.route('/api/user_rate/<userid>')

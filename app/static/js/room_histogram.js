@@ -8,8 +8,8 @@ function getData_for_room_hist() {
 
 setInterval(getData_for_room_hist, 5000);
 
-var width = 600
-var height = 300
+var WIDTH = 600
+var HEIGHT = 300
  
 var MARGINS = {
       top: 20,
@@ -18,13 +18,13 @@ var MARGINS = {
       left: 50
     }
 
-var WIDTH = width - MARGINS.left - MARGINS.right;
-var HEIGHT = height - MARGINS.top - MARGINS.bottom;
+//var WIDTH = width - MARGINS.left - MARGINS.right;
+//var HEIGHT = height - MARGINS.top - MARGINS.bottom;
 
 
 var vis3 = d3.select("#room_histogram").insert("svg")
-  .attr("width", width)
-  .attr("height", height);
+  .attr("width", WIDTH)
+  .attr("height", HEIGHT);
 
 
 
