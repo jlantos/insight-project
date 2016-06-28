@@ -7,16 +7,22 @@ import json
 from neo4jrestclient.client import GraphDatabase
 import numpy as np
 
-cluster = Cluster(['52.35.6.29', '52.35.6.29', '52.35.6.29', '52.24.174.234'])
+cluster = Cluster(['52.41.123.24', '52.36.29.21', '52.41.189.217'])
 session = cluster.connect('rate_data')
 
 
-@app.route('/')
-#@app.route('/index')
-@app.route('/email')
 
-def email():
- return render_template("base.html")
+@app.route('/')
+@app.route('/index')
+def index():
+   return render_template("index.html")
+
+
+#@app.route('/')
+@app.route('/monitor')
+
+def monitor():
+ return render_template("graphs.html")
 
 
 def create_room_links(filename):
@@ -43,10 +49,6 @@ def create_room_values(dose_list):
 
   return room_list
 
-
-@app.route('/index')
-def index():
-   return render_template("index.html")
 
 
 @app.route('/api/user_rate/<userid>')
@@ -120,7 +122,7 @@ def get_room_alerts(num_rooms):
          #print response_list
          
          # If room dose is higher than limit fetch users in <= 2 distance
-         if response_list[0].sum_rate > 80:
+         if response_list[0].sum_rate > 90:
            neighbours = []
            users_to_alert = []
  
@@ -200,7 +202,11 @@ def get_user_alerts(num_users, num_rooms):
          #print response_list
 
          # If room dose is higher than limit fetch users in <= 2 distance
+<<<<<<< HEAD
          if response_list[0].sum_rate > 120:
+=======
+         if (len(response_list) > 0 and response_list[0].sum_rate > 300):
+>>>>>>> 626ef69655b5830ed5a2c039c2543b03c52c60bf
            connections = []
            path_lengths = []
 

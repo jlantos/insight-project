@@ -1,22 +1,22 @@
 function getData_for_user() {
     $.get("/api/user_notification/1000_100", function(graph) {
        // console.log(graph)
-        updateUserGraph(graph.hottest_user_values)
+        updateUserGraph(graph.hottest_user, graph.hottest_user_values)
     });
 };
 
-
+window.onload = getData_for_user()
 setInterval(getData_for_user, 5000);
 
-var WIDTH = 600
-var HEIGHT = 300
+//var WIDTH = 600
+//var HEIGHT = 300
  
-var MARGINS = {
-      top: 30,
-      right: 30,
-      bottom: 20,
-      left: 50
-    }
+//var MARGINS = {
+//      top: 30,
+//      right: 30,
+//      bottom: 20,
+//      left: 50
+//    }
 
 //var WIDTH = width - MARGINS.left - MARGINS.right;
 //var HEIGHT = height - MARGINS.top - MARGINS.bottom;
@@ -28,7 +28,7 @@ var vis2 = d3.select("#max_user_graph").insert("svg")
 
 
 
-function updateUserGraph(data) {
+function updateUserGraph(user, data) {
    
   vis2.selectAll(".line").remove();
   vis2.selectAll(".axis").remove();
@@ -60,13 +60,13 @@ function updateUserGraph(data) {
   // Draw x axis  
   vis2.append("svg:g")
     .attr("class", "axis")
-    .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+    .attr("transform", "translate(0," + (HEIGHT - MARGINS.top) + ")")
     .call(xAxis);
 
   vis2.append("text")      // text label for the x axis
     .attr("class", "label")
     .attr("x", WIDTH / 2 )
-    .attr("y",  HEIGHT + MARGINS.bottom)
+    .attr("y",  HEIGHT - 10)
     .style("text-anchor", "middle")
     .text("time");
 
@@ -80,7 +80,7 @@ function updateUserGraph(data) {
   vis2.append("text")
     .attr("class", "label")
     .attr("transform", "rotate(-90)")
-    .attr("y", 0) // - MARGINS.left)
+    .attr("y", 10) // - MARGINS.left)
     .attr("x", 0 - (HEIGHT / 2))
     .attr("dy", "1em")
     .style("text-anchor", "middle")
@@ -90,10 +90,10 @@ function updateUserGraph(data) {
   vis2.append("text")
     .attr("class", "title")
     .attr("x", (WIDTH / 2))             
-    .attr("y",  MARGINS.top)
+    .attr("y",  MARGINS.top/2)
     .attr("text-anchor", "middle")  
     .style("font-size", "16px")   
-    .text("User with the maximum current dose");
+    .text("User " + user.toString() + " (maximum current dose)");
 
     
   // Draw line

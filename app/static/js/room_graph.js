@@ -1,10 +1,12 @@
 function getData() {
     $.get("/api/room_notification/100", function(graph) {
-        console.log(graph)
+//        console.log(graph)
         updateGraph(graph.force_graph)
     });
 };
 
+
+window.onload = getData();
 setInterval(getData, 15000);
 
 var width = 600
