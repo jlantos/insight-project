@@ -90,7 +90,8 @@ def main():
 
       ### Calculating dose rate ###
       # Dose rate is normal except in room 6 after 240 min
-      if (new_location == 6 and t > 120 and t < 400) or (new_location == 96 and t > 500 and t < 800):
+      #if (new_location == 6 and t > 120 and t < 400) or (new_location == 96 and t > 500 and t < 800):
+      if (new_location == 6 and t > 20 and t < 60) or (new_location == 96 and t > 70 and t < 110):
         rate = contamination
       else:
         rate = background
@@ -98,8 +99,10 @@ def main():
       if random.random() < 1.0/60:
         rate = rate + normal_work
       # User exceeds limit in a certain time range
-      if (user_id == 123 and t > 10 and t < 200):
-        rate = rate + normal_work * 3
+      #if (user_id == 123 and t > 10 and t < 200):
+      #  rate = rate + normal_work * 3
+      if (user_id == 123 and t > 10 and t < 40):
+        rate = rate + normal_work * 2
    
       #loc_data = {"room": {"userid": user_id,  "timestamp": t, "newloc": new_location, "oldloc": old_location[user_id]}}
       #sens_data = {"sensor": {"userid": user_id,  "timestamp": t, "doserate": rate}}
