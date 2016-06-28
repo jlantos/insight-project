@@ -4,18 +4,19 @@
 1. [Introduction](README.md#introduction)
 2. [AWS Clusters](README.md#aws-clusters) 
 3. [Data Pipeline](README.md#data-pipeline)
-4. [Testing](README.md#testing)
-5. Performance(README.md#performance)
-6. Presentation(README.md#presentation)
+4. [Performance](README.md#performance)
+5. [Presentation](README.md#presentation)
 
 
 ## Introduction 
 [Back to Table of contents](README.md#table-of-contents)
 
->Calculate the average degree of a vertex in a Twitter hashtag graph for the last 60 seconds, and update this each time a new tweet appears. You will thus be calculating the average degree over a 60-second sliding window.
-To clarify, a Twitter hashtag graph is a graph connecting all the hashtags that have been mentioned together in a single tweet. 
+[RadiAction](http://radiaction.site) is a monitoring and alerting platform for health risk factors associated with time integrated quantities. It is a big data pipeline which uses personal sensor measurements for location monitoring and produces alerts based on graph relations.
 
-See the [original challenge description](https://github.com/jlantos/coding-challenge) for further details on the hashtag graph and sliding window.
+As a concrete example I'm simulating a facility where employees are working with radioactive sources. Two streams of user data are collected: dose rate (from personal dosimeters) and user location (room) information. The pipeline reconstructs the room specific dose rates from the merged streams, and calculates the time integral of both user and room doses in a sliding window. 
+
+If a user's dose exceeds the predefined limit the closest (in distance) of his direct colleagues is notified. If a room's dose is too high - hence it's considered contaminated - all users in <= 2 distance are notified.
+
 
 ## AWS Clusters
 [Back to Table of contents](README.md#table-of-contents)
