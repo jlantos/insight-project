@@ -1,4 +1,4 @@
-# [RadiAction](https:/radiaction.site)
+# [RadiAction](https://radiaction.site)
 
 ## Table of contents
 1. [Introduction](README.md#introduction)
