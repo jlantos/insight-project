@@ -20,18 +20,17 @@ If a user's dose exceeds the predefined limit the closest (in distance) of his d
 ![Alt text](app/static/img/room_graph.png?raw=true "Room map")
 
 
-
-
 ## AWS Clusters
 [Back to Table of contents](README.md#table-of-contents)
 
-run.sh located in the root runs src/average&#95;degree.py to calculate the average hashtag graph degrees. average_degree.py requires two arguments: an input and an output file with path. 
-
-Example usage: `python src/average_degree.py tweet_input/tweets.txt tweet_output/output.txt`
-
-average&#95;degree.py uses only the Python Standard Library (datetime, heapq, json, math, sys, time).
-The code has been written and tested in Python 2.7.6 on a Linux 3.13.0-37-generic #64-Ubuntu machine.
-
+[RadiAction](http://radiaction.site) runs on four clusters on AWS:
+<ul>
+<li>4 m3.large nodes for Kafka and Spark streaming</li>
+<li>3 m3.large nodes for Cassandra </li>
+<li>1 m3.large Neo4j</li>
+<li>1 m3.large nodes for Flask and the Kafka Producer Pythons cript</li>
+</ul>
+As of July, 2016, this system costs ~$? a month with AWS on-demanf instances used.
 
 ## Data Pipeline
 [Back to Table of contents](README.md#table-of-contents)
