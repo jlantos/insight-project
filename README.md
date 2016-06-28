@@ -47,10 +47,12 @@ The dose rate and room information are sent to separate Kafka topics. A sample o
 Each event of the room stream contains the user id (uid), timestamp (t), new location (nl), and old location (ol) fields. While events of the sensor stream comprises of user id (uid), timestamp (t), and dose rate (dr).
 
 ### Spark Streaming
-Spark Streaming joins the two streams based on the user id and timestamp. The this new stream is mapped to calculate the integrate over a sliding window. Since Spark Streaming defines the window operations based on incoming event time (instead of the timestamp contained in the data) each window is filterd to make sure that for each timestamp the last n events are summed.
+Spark Streaming joins the two streams based on the user id and timestamp. 
+...
+Since Spark Streaming defines the window operations based on incoming event time (instead of the timestamp contained in the data) each window is filterd to make sure that for each timestamp the last n events are summed.
 
 ### Data bases
-The resulting dose rates and dose values are stored in Cassandra: partitioned by user id and clustered by timestamp. Time is reversed for the doses to make last value look ups efficient.
+The resulting dose values are stored in Cassandra: partitioned by user id and clustered by timestamp (time is reversed for efficient last record lookups).
 
 The room and user graphs are stored in Neo4j. When a room's dose is higher than the preset threshold all its first and second degree connections are looked up so all users currently located in these rooms can be notified.
 If a user exceeds his dose limit the shortest path between his and his 5 direct colleagues' location is calculated. The closest connection is alerted. Neo4j performs graph calculations effectively: a shortest distance calculation in a graph with 100k nodes takes ~0.3 s.
