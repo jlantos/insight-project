@@ -18,6 +18,8 @@ As a concrete example I'm simulating a facility where employees are working with
 If a user's dose exceeds the predefined limit the closest (in distance) of his direct colleagues is notified. If a room's dose is too high - hence it's considered contaminated - all users in <= 2 distance are notified.
 
 
+
+
 ## AWS Clusters
 [Back to Table of contents](README.md#table-of-contents)
 
