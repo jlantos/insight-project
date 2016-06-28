@@ -7,7 +7,7 @@ import json
 from neo4jrestclient.client import GraphDatabase
 import numpy as np
 
-cluster = Cluster(['52.35.6.29', '52.35.6.29', '52.35.6.29', '52.24.174.234'])
+cluster = Cluster(['52.41.123.24', '52.36.29.21', '52.41.189.217'])
 session = cluster.connect('rate_data')
 
 
