@@ -25,7 +25,7 @@ If a user's dose exceeds the predefined limit the closest (in distance) of his d
 
 [RadiAction](http://radiaction.site) runs on four clusters on AWS:
 <ul>
-<li>4 m3.large nodes for Kafka and Spark streaming</li>
+<li>4 m3.large nodes for Kafka and Spark Streaming</li>
 <li>3 m3.large nodes for Cassandra </li>
 <li>1 m3.large Neo4j</li>
 <li>1 m3.large nodes for Flask and the Kafka Producer Pythons script</li>
@@ -45,7 +45,14 @@ The dose rate and room information are sent to separate Kafka topics. A sample o
 ![Alt text](app/static/img/input.png?raw=true "Input data")
 Each event of the room stream contains the user id (uid), timestamp (t), new location (nl), and old location (ol) fields. While events of the sensor stream comprises of user id (uid), timestamp (t), and dose rate (dr).
 
-### Spark streaming
+### Spark Streaming
+Spark Streaming joins the two streams based on the user id and timestamp. The this new stream is mapped to calculate the integrate over a sliding window. Since Spark Streaming defines the window operations based on incoming event time (instead of the timestamp contained in the data) each window is filterd to make sure that for each timestamp the last n events are summed.
+
+### Data bases
+The resulting dose rates and dose values are stored in Cassandra: partitioned by user id and clustered by timestamp. Time is reversed for the doses to make last value look ups efficient.
+
+The room and user graphs are stored in Neo4j. When a room's dose is higher than the preset threshold all its first and second degree connections are looked up so all users currently located in these rooms can be notified.
+If a user exceeds his dose limit the shortest path between his and his 5 direct colleagues' location is calculated. The closest connection is alerted. Neo4j performs graph calculations effectively: a shortest distance calculation in a graph with 100k nodes (node degree 5) takes ~0.3 s.
 
 ## Performance
 [Back to Table of contents](README.md#table-of-contents)
@@ -54,4 +61,4 @@ The current system uses a sliding window of 100s windowLength and 5s slideInterv
 
 
 ## Presentation
-Presentation for [RadiAction](http://radiaction.site) can be found [here](https://jlantos.github.io/).
+[Presentation](https://jlantos.github.io/) and demo video for [RadiAction](http://radiaction.site).
