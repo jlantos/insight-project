@@ -52,7 +52,7 @@ Spark Streaming joins the two streams based on the user id and timestamp. The th
 The resulting dose rates and dose values are stored in Cassandra: partitioned by user id and clustered by timestamp. Time is reversed for the doses to make last value look ups efficient.
 
 The room and user graphs are stored in Neo4j. When a room's dose is higher than the preset threshold all its first and second degree connections are looked up so all users currently located in these rooms can be notified.
-If a user exceeds his dose limit the shortest path between his and his 5 direct colleagues' location is calculated. The closest connection is alerted. Neo4j performs graph calculations effectively: a shortest distance calculation in a graph with 100k nodes (node degree 5) takes ~0.3 s.
+If a user exceeds his dose limit the shortest path between his and his 5 direct colleagues' location is calculated. The closest connection is alerted. Neo4j performs graph calculations effectively: a shortest distance calculation in a graph with 100k nodes takes ~0.3 s.
 
 ## Performance
 [Back to Table of contents](README.md#table-of-contents)
