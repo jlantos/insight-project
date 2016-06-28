@@ -28,7 +28,7 @@ If a user's dose exceeds the predefined limit the closest (in distance) of his d
 <li>4 m3.large nodes for Kafka and Spark Streaming</li>
 <li>3 m3.large nodes for Cassandra </li>
 <li>1 m3.large Neo4j</li>
-<li>1 m3.large nodes for Flask and the Kafka Producer Pythons script</li>
+<li>1 m3.large nodes for Flask and the Kafka Producer Python script</li>
 </ul>
 As of July, 2016, this system costs ~$? a day with AWS on-demand instances used.
 
@@ -60,7 +60,7 @@ If a user exceeds his dose limit the shortest path between his and his 5 direct 
 ## Performance
 [Back to Table of contents](README.md#table-of-contents)
 
-The current system uses a sliding window of 100s windowLength and 5s slideInterval. With a 600 events/s input rate the processing time for each micro batch varies between 5-8 s.
+The current system uses a sliding window of 100 s windowLength and 5 s slideInterval. With a 600 events/s input rate the processing time for each micro batch varies between 5-8 s.
 
 
 ## Presentation
