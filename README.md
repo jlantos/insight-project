@@ -30,17 +30,14 @@ If a user's dose exceeds the predefined limit the closest (in distance) of his d
 <li>1 m3.large Neo4j</li>
 <li>1 m3.large nodes for Flask and the Kafka Producer Pythons cript</li>
 </ul>
-As of July, 2016, this system costs ~$? a month with AWS on-demanf instances used.
+As of July, 2016, this system costs ~$? a day with AWS on-demand instances used.
 
 ## Data Pipeline
 [Back to Table of contents](README.md#table-of-contents)
 
 ![Alt text](app/static/img/pipeline.png?raw=true "Pipeline")
 
-The two main challenges of this task are maintaining the Twitter graph with the sliding window and calculating the vertex degree for each incoming tweet. Both steps need to be effective to ensure fast enough run time and low memory usage for large data sets.
-
-1. To maintain the tweets in the current time window I've used a min heap to store the (time, hashtag list) attributes for each tweet. This data structure allows quick min look up and pop (O(1)), and relatively fast (O(log(n)) insertion. The max time is stored in a separate variable. When a new tweet arrives its time is compared to the max time to check if it's not outside of the window (more than 1 minute earlier). If max time changes the oldest tweets are checked if their time still fall in the new window and are removed as necessary. 
-2. To calculate the average vertex degree I've made use of the Handshaking lemma: the sum of all vertex degrees equals to twice the number of edges of a graph. To store the edges I've used a dictionary where the keys are the graph nodes and the values are the list of the other nodes they are connected to. E.g. if  a graph has 3 nodes, which are connected like this: H2-H1-H3 then the resulting dictionary will be {H1:[H2, H3], H2:[H3], H3:[H2]}. Since all edges are accounted for at both nodes when summing the length of each lists we count twice the number of edges (just what the lemma requires). When a new tweet arrives the edges are updated based on the changes of the Tweet heap described above.
+### Data source
  
 
 ## Performance
