@@ -49,7 +49,7 @@ Each event of the room stream contains the user id (uid), timestamp (t), new loc
 ### Spark Streaming
 Spark Streaming joins the two streams based on the user id and timestamp. 
 ...
-Since Spark Streaming defines the window operations based on incoming event time (instead of the timestamp contained in the data) each window is filterd to make sure that for each timestamp the last n events are summed.
+Since Spark Streaming defines the window operations based on incoming event time (instead of the timestamp contained in the data) each window is filtered to make sure that for each timestamp the last n events are summed.
 
 ### Data bases
 The resulting dose values are stored in Cassandra: partitioned by user id and clustered by timestamp (time is reversed for efficient last record lookups).
