@@ -35,6 +35,8 @@ As of July, 2016, this system costs ~$? a month with AWS on-demanf instances use
 ## Data Pipeline
 [Back to Table of contents](README.md#table-of-contents)
 
+![Alt text](app/static/img/pipeline.png?raw=true "Pipeline")
+
 The two main challenges of this task are maintaining the Twitter graph with the sliding window and calculating the vertex degree for each incoming tweet. Both steps need to be effective to ensure fast enough run time and low memory usage for large data sets.
 
 1. To maintain the tweets in the current time window I've used a min heap to store the (time, hashtag list) attributes for each tweet. This data structure allows quick min look up and pop (O(1)), and relatively fast (O(log(n)) insertion. The max time is stored in a separate variable. When a new tweet arrives its time is compared to the max time to check if it's not outside of the window (more than 1 minute earlier). If max time changes the oldest tweets are checked if their time still fall in the new window and are removed as necessary. 
