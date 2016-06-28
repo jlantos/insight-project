@@ -11,11 +11,18 @@ cluster = Cluster(['52.35.6.29', '52.35.6.29', '52.35.6.29', '52.24.174.234'])
 session = cluster.connect('rate_data')
 
 
+
 @app.route('/')
+@app.route('/index')
+def index():
+   return render_template("index.html")
+
+
+#@app.route('/')
 @app.route('/monitor')
 
 def monitor():
- return render_template("base.html")
+ return render_template("graphs.html")
 
 
 def create_room_links(filename):
@@ -42,10 +49,6 @@ def create_room_values(dose_list):
 
   return room_list
 
-
-@app.route('/index')
-def index():
-   return render_template("index.html")
 
 
 @app.route('/api/user_rate/<userid>')

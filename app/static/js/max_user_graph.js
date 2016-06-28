@@ -90,7 +90,7 @@ function updateUserGraph(user, data) {
   vis2.append("text")
     .attr("class", "title")
     .attr("x", (WIDTH / 2))             
-    .attr("y",  MARGINS.top)
+    .attr("y",  MARGINS.top/2)
     .attr("text-anchor", "middle")  
     .style("font-size", "16px")   
     .text("User " + user.toString() + " (maximum current dose)");

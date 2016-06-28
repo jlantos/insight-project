@@ -7,7 +7,7 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="../../favicon.ico">
+    <link rel="icon" href="../static/radi.ico">
 
     <title>RadiAction</title>
 
@@ -19,7 +19,7 @@
 
     <!-- Custom styles for this template -->
     <link href="../../static/css/starter-template.css" rel="stylesheet"> 
-
+    <!--<link rel="shortcut icon" href="../../static/radi.ico" type="image/x-icon" />-->
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
    <!-- <script src="../../assets/js/ie-emulation-modes-warning.js"></script> -->
@@ -99,7 +99,7 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/monitor">Monitor</a></li>
+          <!--  <li><a href="/monitor">Monitor</a></li> -->
             <li><a target="_blank" href="https://jlantos.github.io">Slides</a></li>
             <li><a target="_blank" href="https://github.com/jlantos/insight-project">Github</a></li>
             <li><a target="_blank" href="/video">Demo video</a></li>
@@ -109,7 +109,7 @@
     </nav>
 
     {% block index %}{% endblock %}
-    {% block graphs %}{% endblock %} 
+	   <!-- {% block graphs %}{% endblock %} -->
 
 
 <!--
@@ -130,8 +130,9 @@
 
     <div style="width: 1200px; height: 10px; margin: 0 auto"></div>
 
+-->
 
-
+<!--
 <!---   Room specific graphs 
         ==================== -->
     <div class="title_line"  style="width: 1200px; height: 50px; margin: 0 auto">ROOMS</div>
@@ -152,13 +153,17 @@
     <div class="title_line"  style="width: 1200px; height: 30px; margin: 0 auto">Room map</div>
 
     <div id="dose_graph" style="width: 600px; height: 600px; margin: 0 auto"></div>  
-
 -->
+
+
+
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script> -->
     <!--<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script> -->
+
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
 
     <script src="//d3js.org/d3.v3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
