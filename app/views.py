@@ -202,11 +202,7 @@ def get_user_alerts(num_users, num_rooms):
          #print response_list
 
          # If room dose is higher than limit fetch users in <= 2 distance
-<<<<<<< HEAD
-         if response_list[0].sum_rate > 120:
-=======
          if (len(response_list) > 0 and response_list[0].sum_rate > 300):
->>>>>>> 626ef69655b5830ed5a2c039c2543b03c52c60bf
            connections = []
            path_lengths = []
 
