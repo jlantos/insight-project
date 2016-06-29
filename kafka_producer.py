@@ -42,7 +42,7 @@ def main():
         d = yaml.safe_load(line)
         jd = json.dumps(d)
 
-        # send the messages to  separate topics
+        # send the messages to separate topics
         if 'sens' in d:
           producer_s.send(sys.argv[2], {d['sens']['uid']: jd})
         if 'room' in d:
