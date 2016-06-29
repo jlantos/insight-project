@@ -30,7 +30,18 @@ def raw_data_tojson(sensor_data):
   """ Parse input json stream """
   raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
   return(raw_sensor.map(lambda x: json.loads(x[x.keys()[0]])))
-  
+ 
+
+def costum_add(l, sum_time_window):
+  """ List sum, scaled if not enpugh datapoints are recieved """
+  result, length = 0, 0
+  for i in l:
+    result = result + i
+    length = length + 1
+  if length:
+    result = float(result)/length*sum_time_window
+  return result 
+ 
 
 def main():
     """ Joins two input streams to get location specidic rates,
@@ -43,8 +54,11 @@ def main():
 
 
     # Kafka and Spark Streaming specific vars
+    batch_length = 1
+    window_length = 50
+
     sc = SparkContext(appName="PythonStreamingRadiAction")
-    ssc = StreamingContext(sc, 1)
+    ssc = StreamingContext(sc, batch_length)
     ssc.checkpoint("hdfs://ec2-52-24-174-234.us-west-2.compute.amazonaws.com:9000/usr/sp_data")
 
     zkQuorum, topic1, topic2 = sys.argv[1:]
@@ -98,26 +112,17 @@ def main():
 
       return(valid_points)
 
-    ### Find the min time for each user in the past xxx time
+    ### Find the max time for each user in the past xxx time and sum the latest sum_time_window points
     user_rate_values = combined_info.map(lambda x: (x[0][0], (x[0][1], x[1][1]))) 
 
-    def costum_add(l):
-      res = 0
-      length = 0
-      for i in l:
-        res = res + i
-        length = length + 1
-      if length:
-        res = float(res)/length*sum_time_window
-      return res 
-
-
     # Calculate user dose in sliding window
-    windowed_user_rate = user_rate_values.groupByKeyAndWindow(50, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+    windowed_user_rate = user_rate_values.groupByKeyAndWindow(window_length, batch_length).map(lambda x : (x[0], list(x[1]))).\
+                         map(lambda x: {"user_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])), sum_time_window)})
     windowed_user_rate.saveToCassandra("rate_data", "user_sum")
 
     # Calculate room dose in sliding window
-    windowed_room_rate = room_rate_gen.groupByKeyAndWindow(50, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"room_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+    windowed_room_rate = room_rate_gen.groupByKeyAndWindow(window_length, batch_length).map(lambda x : (x[0], list(x[1]))).\
+                         map(lambda x: {"room_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])), sum_time_window)})
     windowed_room_rate.saveToCassandra("rate_data", "room_sum")
 
 
