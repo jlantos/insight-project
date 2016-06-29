@@ -33,7 +33,7 @@ def raw_data_tojson(sensor_data):
  
 
 def costum_add(l, sum_time_window):
-  """ List sum, scaled if not enpugh datapoints are recieved """
+  """ List sum, scaled if not enough datapoints are received """
   result, length = 0, 0
   for i in l:
     result = result + i
@@ -54,7 +54,7 @@ def main():
 
 
     # Kafka and Spark Streaming specific vars
-    batch_length = 1
+    batch_length = 5
     window_length = 50
 
     sc = SparkContext(appName="PythonStreamingRadiAction")
