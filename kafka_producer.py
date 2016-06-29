@@ -20,40 +20,35 @@ def main():
   else:
     wait_time = 0
 
-
   # Set up Producer: send to all 4 instances, encode json
-
   ipfile = open('ip_addresses.txt', 'r')
   ips = ipfile.read()[:-1]
   ipfile.close()
   ips = ips.split(', ')
 
   producer_s = (KafkaProducer(bootstrap_servers=ips, 
-#  producer_s = (KeyedProducer(bootstrap_servers=ips,
               value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
   producer_r = (KafkaProducer(bootstrap_servers=ips,
-#  producer_r = (KeyedProducer(bootstrap_servers=ips, 
               value_serializer=lambda v: json.dumps(v).encode('utf-8')))
 
   # Read the file over and over and send the messages line by line
   forever = True
   
- # while forever:
-    # Open file and send the messages line by line
+  #while forever:
+  # Open file and send the messages line by line
   with open(sys.argv[1]) as f:
       for line in f:
         d = yaml.safe_load(line)
         jd = json.dumps(d)
 
-        # send the keyed messages to the separate topics
+        # send the messages to  separate topics
         if 'sens' in d:
           producer_s.send(sys.argv[2], {d['sens']['uid']: jd})
         if 'room' in d:
           producer_r.send(sys.argv[3], {d['room']['uid']: jd})
         
         time.sleep(wait_time)
-
 
 
 if __name__ == "__main__":
