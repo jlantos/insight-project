@@ -17,6 +17,8 @@ from pyspark_cassandra import streaming
 import pyspark_cassandra, sys
 import json
 
+from pyspark import StorageLevel
+
 from pyspark.sql.functions import sum
 from pyspark.sql.types import *
 from pyspark.sql import Window
@@ -38,6 +40,7 @@ def main():
     if len(sys.argv) != 4:
         print("Usage: kafka_wordcount.py <zk> <sensor_topic> <room_topic>", file=sys.stderr)
         exit(-1)
+
 
     # Kafka and Spark Streaming specific vars
     sc = SparkContext(appName="PythonStreamingRadiAction")
@@ -63,12 +66,12 @@ def main():
     # Map the 2 streams to ((userid, time), value) then join the streams
     s1 = raw_loc.map(lambda x: ((x["room"]["uid"], x["room"]["t"]) , x["room"]["nl"]))
     s2 = raw_sensor.map(lambda x: ((x["sens"]["uid"], x["sens"]["t"]), x["sens"]["dr"]))
-  
-    combined_info = s1.join(s2)
+
+    combined_info = s1.join(s2).persist(StorageLevel.MEMORY_ONLY)
 
     # Group stream by room and calc average rate signal 
     room_rate_gen = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().\
-                              map(lambda x : (x[0][0], (x[0][1], reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1]))))))
+                              map(lambda x : (x[0][0], (x[0][1], reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1])))))).persist(StorageLevel.MEMORY_ONLY)
   
     room_rate = room_rate_gen.map(lambda x: {"room_id": x[0], "timestamp": x[1][0], "rate": x[1][1]})
     room_rate.saveToCassandra("rate_data", "room_rate")
@@ -108,11 +111,10 @@ def main():
         res = float(res)/length*sum_time_window
       return res 
 
+
     # Calculate user dose in sliding window
     windowed_user_rate = user_rate_values.groupByKeyAndWindow(50, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
- #   windowed_user_rate.pprint()
     windowed_user_rate.saveToCassandra("rate_data", "user_sum")
-
 
     # Calculate room dose in sliding window
     windowed_room_rate = room_rate_gen.groupByKeyAndWindow(50, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"room_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
