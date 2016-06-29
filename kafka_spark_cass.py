@@ -16,11 +16,17 @@ from pyspark_cassandra import streaming
 import pyspark_cassandra, sys
 import json
 
+from pyspark import StorageLevel
+
 from pyspark.sql.functions import sum
 from pyspark.sql.types import *
 from pyspark.sql import Window
 from pyspark.sql import SQLContext 
 from pyspark.sql import functions
+
+
+#CASSANDRA_CLUSTER_IP_LIST = [CASSANDRA_NODE1, CASSANDRA_NODE2, CASSANDRA_NODE3]
+
 
 def raw_data_tojson(sensor_data):
   raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
@@ -41,7 +47,7 @@ def main():
         exit(-1)
 
     sc = SparkContext(appName="PythonStreamingKafkaWordCount")
-    ssc = StreamingContext(sc, 1)
+    ssc = StreamingContext(sc, 5)
     ssc.checkpoint("hdfs://ec2-52-24-174-234.us-west-2.compute.amazonaws.com:9000/usr/sp_data")
    # sqlContext = SQLContext(sc)
 
@@ -84,7 +90,7 @@ def main():
   #  s1.pprint()
   #  s2.pprint()
 
-    combined_info = s1.join(s2)
+    combined_info = s1.join(s2).persist(StorageLevel.MEMORY_ONLY)
     #combined_info.pprint()
 
     # Map ((room, time), rate) then take the average of the rates
@@ -92,7 +98,7 @@ def main():
     
     #room_info.pprint()
     room_rate_gen = combined_info.map(lambda x: ((x[1][0],x[0][1]), x[1][1])).groupByKey().\
-                              map(lambda x : (x[0][0], (x[0][1], reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1]))))))
+                              map(lambda x : (x[0][0], (x[0][1], reduce(lambda x, y: x + y, list(x[1]))/float(len(list(x[1])))))).persist(StorageLevel.MEMORY_ONLY)
   
     room_rate = room_rate_gen.map(lambda x: {"room_id": x[0], "timestamp": x[1][0], "rate": x[1][1]})
   
@@ -153,13 +159,13 @@ def main():
         res = float(res)/length*sum_time_window
       return res 
 
-    windowed_user_rate = user_rate_values.groupByKeyAndWindow(50, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+    windowed_user_rate = user_rate_values.groupByKeyAndWindow(50, 5).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"user_id": x[0], "timestamp": max(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
  #   windowed_user_rate.pprint()
     windowed_user_rate.saveToCassandra("rate_data", "user_sum")
 
 
 
-    windowed_room_rate = room_rate_gen.groupByKeyAndWindow(50, 1).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"room_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
+    windowed_room_rate = room_rate_gen.groupByKeyAndWindow(50, 5).map(lambda x : (x[0], list(x[1]))).map(lambda x: {"room_id": x[0], "timestamp": min(x[1])[0], "sum_rate": costum_add(list(filter_list(x[1])))})
     windowed_room_rate.saveToCassandra("rate_data", "room_sum")
 
 
