@@ -114,7 +114,7 @@ def get_room_alerts(num_rooms):
   times = []
   alerts = []
 
-  room_alert_threshold = 30
+  room_alert_threshold = 90
 
   # Get latest dose for all rooms
   for room in range(0, int(num_rooms)):
