@@ -209,18 +209,18 @@ def get_user_alerts(num_users, num_rooms):
       #  curr_resp_list.append(val[0])
 #
       curr_resp_list = query_cass(curr_loc_req)
-      dang_user_room = curr_resp_list[0]
+      dang_user_room = curr_resp_list[0].room
      
       # Fetch direct colleagues
       first = "MATCH (person { uid:'" + str(user) + "'})-[:COL" + str(num_users) + "]-(first_con) RETURN first_con.uid as uid"    
       results = db.query(first, returns=(int))
       for r in results:
         connections.append(r[0])
-         
+      
       # Look up the location (room number) of the direct colleagues and calculate shortest distance
       for connection in connections:
         stmt = "SELECT room FROM user_rate WHERE user_id = " + str(connection) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
-      #  response2 = session.execute(stmt)
+#  response2 = session.execute(stmt)
       # # Convert Cassandra response to ROW list
       #  response_list_2 = []
       #  for val in response2:
@@ -229,16 +229,17 @@ def get_user_alerts(num_users, num_rooms):
         response_list_2 = query_cass(stmt) 
         
         if len(response_list_2) > 0:
-          con_room = response_list_2[0]
+          con_room = response_list_2[0].room
         else:
           con_room = -1
-        ####print con_room  
-
+        #print con_room, dang_user_room  
+ 
         # Find shortest path distance to each colleague
         # Handle similar room numbers as well
         if con_room <> dang_user_room:
           dist = "MATCH (u1:room"+ str(num_rooms) + "{ number:'" + str(dang_user_room) + "'}),(u2:room" + str(num_rooms) + " { number:'" + str(con_room) +"' }), \
                 p = shortestPath((u1)-[*..150]-(u2)) RETURN length(p) as length"
+       #   print dist
           results = db.query(dist, returns=(int))
           if results:
             for r in results:
@@ -247,7 +248,7 @@ def get_user_alerts(num_users, num_rooms):
               path_lengths.append(150)
         else:
             path_lengths.append(0)
-           
+      #print path_lengths     
       # Select the one in the shortest distance
       colleague_to_notify = connections[path_lengths.index(min(path_lengths))]        
 
