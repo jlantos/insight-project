@@ -5,7 +5,7 @@ function getData_for_user_alert() {
 };
 
 
-setInterval(getData_for_user_alert, 1000);
+setInterval(getData_for_user_alert, 5000);
 
 
 function myFunction2(alert_time, response) {
