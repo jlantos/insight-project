@@ -55,6 +55,15 @@ def query_cass(stmt):
   return response_list
 
 
+def calc_histogram(dose_list):
+  """ Calc histogram, return sqrt(freq) """
+  frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))
+  histogram_data = []
+  for i in range(0, len(frequency)):
+    histogram_data.append({"value": dose_value[i], "freq": frequency[i]**0.5})
+
+  return histogram_data
+
 @app.route('/api/user_rate/<userid>')
 def get_user_rate(userid):
   """ Get rate time series for user """
@@ -155,10 +164,12 @@ def get_room_alerts(num_rooms):
   force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
 
   # Calculate histogram of dose values
-  frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))
-  histogram_data = []
-  for i in range(0, len(frequency)):
-    histogram_data.append({"value": dose_value[i], "freq": frequency[i]**0.5})
+  #frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))
+  #histogram_data = []
+  #for i in range(0, len(frequency)):
+  #  histogram_data.append({"value": dose_value[i], "freq": frequency[i]**0.5})
+
+  histogram_data = calc_histogram(dose_list)
       
   # Output json  
   jsonresponse = {"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
@@ -168,95 +179,105 @@ def get_room_alerts(num_rooms):
 
 @app.route('/api/user_notification/<num_users>_<num_rooms>')
 def get_user_alerts(num_users, num_rooms):
-       db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
+  """ Calculate room specific graph data (dose distribution and time series 
+      of hottest room), and users to notify """
+  db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
 
-       dose_list = []
-       times = []
-       alerts = []
+  dose_list = []
+  times = []
+  alerts = []
 
-       for user in range(0, int(num_users)):
+  user_alert_threshold = 300
 
-         # Query last sum value for each room
-         stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 1 ALLOW FILTERING".format(user)
-         response = session.execute(stmt)
-         # Convert Cassandra response to ROW list
-         response_list = []
-         for val in response:
-            response_list.append(val)
-         #print response_list
+  # Get latest dose for all users
+  for user in range(0, int(num_users)):
 
-         # If room dose is higher than limit fetch users in <= 2 distance
-         if (len(response_list) > 0 and response_list[0].sum_rate > 300):
-           connections = []
-           path_lengths = []
+    # Query last sum value for each room
+    stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 1 ALLOW FILTERING".format(user)
+    response_list = query_cass(stmt)    
 
-           curr_loc_req = "SELECT room FROM user_rate WHERE user_id = " + str(user) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
-           curr_resp = session.execute(curr_loc_req)
-           # Convert Cassandra response to ROW list
-           curr_resp_list = []
-           for val in curr_resp:
-             curr_resp_list.append(val[0])
-           dang_user_room = curr_resp_list[0]
-          
-           #print dang_user_room
+    # If user dose is higher than limit find closest direct colleague
+    if (len(response_list) > 0 and response_list[0].sum_rate > user_alert_threshold):
+      connections = []
+      path_lengths = []
 
- 
-           # Fetch direct colleagues
-           first = "MATCH (person { uid:'" + str(user) + "'})-[:COL" + str(num_users) + "]-(first_con) RETURN first_con.uid as uid"
+      curr_loc_req = "SELECT room FROM user_rate WHERE user_id = " + str(user) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
+      #curr_resp = session.execute(curr_loc_req)
+      ## Convert Cassandra response to ROW list
+      #curr_resp_list = []
+      #for val in curr_resp:
+      #  curr_resp_list.append(val[0])
+#
+      curr_resp_list = query_cass(curr_loc_req)
+      dang_user_room = curr_resp_list[0]
+     
+      # Fetch direct colleagues
+      first = "MATCH (person { uid:'" + str(user) + "'})-[:COL" + str(num_users) + "]-(first_con) RETURN first_con.uid as uid"    
+      results = db.query(first, returns=(int))
+      for r in results:
+        connections.append(r[0])
+         
+      # Look up the location (room number) of the direct colleagues and calculate shortest distance
+      for connection in connections:
+        stmt = "SELECT room FROM user_rate WHERE user_id = " + str(connection) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
+      #  response2 = session.execute(stmt)
+      # # Convert Cassandra response to ROW list
+      #  response_list_2 = []
+      #  for val in response2:
+      #    response_list_2.append(val[0])
+
+        response_list_2 = query_cass(stmt) 
+        
+        if len(response_list_2) > 0:
+          con_room = response_list_2[0]
+        else:
+          con_room = -1
+        ####print con_room  
+
+        # Find shortest path distance to each colleague
+        # Handle similar room numbers as well
+        if con_room <> dang_user_room:
+          dist = "MATCH (u1:room"+ str(num_rooms) + "{ number:'" + str(dang_user_room) + "'}),(u2:room" + str(num_rooms) + " { number:'" + str(con_room) +"' }), \
+                p = shortestPath((u1)-[*..150]-(u2)) RETURN length(p) as length"
+          results = db.query(dist, returns=(int))
+          if results:
+            for r in results:
+              path_lengths.append(r[0])
+          else:
+              path_lengths.append(150)
+        else:
+            path_lengths.append(0)
            
-           results = db.query(first, returns=(int))
-           for r in results:
-             connections.append(r[0])
-              
-           ####print connections
-           # Look up the location (room number) of the direct colleagues and calculate shortest distance
-           for connection in connections:
-             stmt = "SELECT room FROM user_rate WHERE user_id = " + str(connection) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
-             response2 = session.execute(stmt)
-            # Convert Cassandra response to ROW list
-             response_list_2 = []
-             for val in response2:
-               response_list_2.append(val[0])
-             con_room = response_list_2[0]
-             ####print con_room  
-             # Find shortest path distance to each colleagues
-             # Handle similar room numbers as well
-             if con_room <> dang_user_room:
-               dist = "MATCH (u1:room"+ str(num_rooms) + "{ number:'" + str(dang_user_room) + "'}),(u2:room" + str(num_rooms) + " { number:'" + str(con_room) +"' }), \
-                     p = shortestPath((u1)-[*..150]-(u2)) RETURN length(p) as length"
- 
-               results = db.query(dist, returns=(int))
-               for r in results:
-                 path_lengths.append(r[0])
-             else:
-                 path_lengths.append(0)
-           
-           # Select the one in the shortest distance
-           colleague_to_notify = connections[path_lengths.index(min(path_lengths))]             
+      # Select the one in the shortest distance
+      colleague_to_notify = connections[path_lengths.index(min(path_lengths))]        
 
-           alert = {"user_in_danger": user, "user_to_alert": colleague_to_notify, "distance": min(path_lengths)}
-           alerts.append(alert)
+      alert = {"user_in_danger": user, "user_to_alert": colleague_to_notify, "distance": min(path_lengths)}
+      alerts.append(alert)
 
 
-         dose_list.append(response_list[0].sum_rate)
-         times.append(response_list[0].timestamp)
+    dose_list.append(response_list[0].sum_rate)
+    times.append(response_list[0].timestamp)
 
-       avg_time = sum(times) / (len(times))
-       most_active_user =  dose_list.index(max(dose_list))
+  # Find average time of last events and most exposed user
+  avg_time = sum(times) / (len(times))
+  most_active_user =  dose_list.index(max(dose_list))
 
-       most_active_user_values = get_user_sum(most_active_user)
+  # Get time series for most exposed user
+  most_active_user_values = get_user_sum(most_active_user)
 
-       # Calculate histogram of dose values
-       frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))#np.min(dose_list), np.max(dose_list)+2))
-       histogram_data = []
-       for i in range(0, len(frequency)):
-         if frequency[i] > 0:
-           histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
-         else:
-           histogram_data.append({"value": dose_value[i], "freq": 1})
+  # Calculate histogram of dose values
+  #frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))#np.min(dose_list), np.max(dose_list)+2))
+  #histogram_data = []
+  #for i in range(0, len(frequency)):
+  #  if frequency[i] > 0:
+  #    histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
+  #  else:
+  #    histogram_data.append({"value": dose_value[i], "freq": 1})
 
+  histogram_data = calc_histogram(dose_list)
 
-       jsonresponse = {"avg_time": avg_time, "hottest_user": most_active_user, "hottest_user_values": most_active_user_values,
-                        "alerts": alerts, "dose_rates": histogram_data}
-       return jsonify(jsonresponse)
+  # Output json
+  jsonresponse = {"avg_time": avg_time, "hottest_user": most_active_user, "hottest_user_values": most_active_user_values,
+                   "alerts": alerts, "dose_rates": histogram_data}
+  return jsonify(jsonresponse)
 
