@@ -7,9 +7,9 @@ import json
 from neo4jrestclient.client import GraphDatabase
 import numpy as np
 
+# Cassandra cluster
 cluster = Cluster(['52.33.51.8', '52.33.51.8', '52.35.232.125'])
 session = cluster.connect('rate_data')
-
 
 
 @app.route('/')
@@ -18,9 +18,7 @@ def index():
    return render_template("index.html")
 
 
-#@app.route('/')
 @app.route('/monitor')
-
 def monitor():
  return render_template("graphs.html")
 
@@ -28,7 +26,6 @@ def monitor():
 def create_room_links(filename):
   """ Reads a csv file with the "room1, room2" edges
       and converts the lines to a list of json """
-
   myfile = open(filename, "r")
   link_list = []
 
@@ -50,136 +47,145 @@ def create_room_values(dose_list):
   return room_list
 
 
+def query_cass(stmt):
+  response = session.execute(stmt)  
+  response_list = []
+  for val in response:
+    response_list.append(val)
+  return response_list
+
 
 @app.route('/api/user_rate/<userid>')
 def get_user_rate(userid):
-       stmt = "SELECT * FROM user_rate WHERE user_id={0} ALLOW FILTERING".format(userid)
-       response = session.execute(stmt)  
-       response_list = []
-       for val in response:
-            response_list.append(val)
-      
-       jsonresponse = [{"time": x.timestamp, "dose_rate": x.rate} for x in response_list]
-       return render_template("line_graph_rate.html", jsondata = (json.dumps(jsonresponse))) 
+  """ Get rate time series for user """
+  stmt = "SELECT * FROM user_rate WHERE user_id={0} ALLOW FILTERING".format(userid)
+  #response = session.execute(stmt)  
+  #response_list = []
+  #for val in response:
+  #  response_list.append(val)
+  
+  response_list = query_cass(stmt)    
+  jsonresponse = [{"time": x.timestamp, "dose_rate": x.rate} for x in response_list]
+  return render_template("line_graph_rate.html", jsondata = (json.dumps(jsonresponse))) 
       
 
 @app.route('/api/room_rate/<userid>')
 def get_room_rate(userid):
-       stmt = "SELECT * FROM room_rate WHERE room_id={0} ALLOW FILTERING".format(userid)
-       response = session.execute(stmt)
-       response_list = []
-       for val in response:
-            response_list.append(val)
+  """ Get rate time series for room """
+  stmt = "SELECT * FROM room_rate WHERE room_id={0} ALLOW FILTERING".format(userid)
+  #response = session.execute(stmt)
+  #response_list = []
+  #for val in response:
+  #  response_list.append(val)
 
-       jsonresponse = [{"time": x.timestamp, "dose_rate": x.rate} for x in response_list]
-       return render_template("line_graph_rate.html", jsondata = (json.dumps(jsonresponse)))
+  response_list = query_cass(stmt)    
+  jsonresponse = [{"time": x.timestamp, "dose_rate": x.rate} for x in response_list]
+  return render_template("line_graph_rate.html", jsondata = (json.dumps(jsonresponse)))
 
 
 @app.route('/api/user/<userid>')
 def get_user_sum(userid):
-       stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 50 ALLOW FILTERING".format(userid)
-       response = session.execute(stmt)
-       response_list = []
-       for val in response:
-            response_list.append(val)
+  """ Get sum time series for user """
+  stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 50 ALLOW FILTERING".format(userid)
+  #response = session.execute(stmt)
+  #response_list = []
+  #for val in response:
+  #  response_list.append(val)
+  response_list = query_cass(stmt)    
+  jsonresponse = [{"time": x.timestamp, "dose": int(np.round(x.sum_rate))} for x in response_list]
+  return(jsonresponse)
 
-       jsonresponse = [{"time": x.timestamp, "dose": int(np.round(x.sum_rate))} for x in response_list]
-       #return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
-       return(jsonresponse)
 
 @app.route('/api/room/<userid>')
 def get_room_sum(userid):
-       stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 50 ALLOW FILTERING".format(userid)
-       response = session.execute(stmt)
-       response_list = []
-       for val in response:
-            response_list.append(val)
-
-       jsonresponse = [{"time": (x.timestamp), "dose": int(np.round(x.sum_rate))} for x in response_list]
-#       jsonresponse = [{"time": x.timestamp, "year": str(x.timestamp), "dose_rate": x.sum_rate, "sale": str(np.round(x.sum_rate))} for x in response_list]
-       #return render_template("line_graph_sum.html", jsondata = (json.dumps(jsonresponse)))
-##       return(json.dumps(jsonresponse))
-       return(jsonresponse)
+  """ Get sum time series for room """
+  stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 50 ALLOW FILTERING".format(userid)
+  #response = session.execute(stmt)
+  #response_list = []
+  #for val in response:
+  #  response_list.append(val)
+  response_list = query_cass(stmt)    
+  jsonresponse = [{"time": (x.timestamp), "dose": int(np.round(x.sum_rate))} for x in response_list]
+  return(jsonresponse)
 
 
-@app.route('/api/room_notification/<num_rooms>', methods=['GET','POST'])
+@app.route('/api/room_notification/<num_rooms>')
 def get_room_alerts(num_rooms):
-       db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
-       
-       dose_list = []
-       times = []
-       alerts = []
-
-       for room in range(0, int(num_rooms)):
-
-         # Query last sum value for each room
-         stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 1 ALLOW FILTERING".format(room)
-         response = session.execute(stmt)
-         # Convert Cassandra response to ROW list
-         response_list = []
-         for val in response:
-            response_list.append(val)
-         #print response_list
-         
-         # If room dose is higher than limit fetch users in <= 2 distance
-         if response_list[0].sum_rate > 90:
-           neighbours = []
-           users_to_alert = []
- 
-           first = "MATCH (room" + str(num_rooms) + "{ number :'" + str(room) + "'})-[:GATE" + str(num_rooms) + "]-(first_con) RETURN first_con.number as number"
-           second = "MATCH (room" + str(num_rooms) + " { number :'" + str(room) + "'})-[:GATE" + str(num_rooms) + "*2]-(sec_con) RETURN sec_con.number as number"
-           
-           #print first 
-           results = db.query(first, returns=(int))
-           for r in results:
-             neighbours.append(r[0])
-             
-           results = db.query(second, returns=(int))
-           for r in results:
-             neighbours.append(r[0])
-
-           for neighbour in neighbours:
-             #print neighbour
-             #print response_list[0].timestamp
-             stmt = "SELECT users FROM room_users WHERE room_id = " + str(neighbour) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
-             #print stmt
-             response2 = session.execute(stmt)
-            # Convert Cassandra response to ROW list
-             response_list_2 = []
-             for val in response2:
-               users_to_alert = users_to_alert+ val[0]
-           
-           alert = {"room": room, "users_to_alert": users_to_alert}
-           alerts.append(alert)
+  """ Calculate room specific graph data (dose distribution and time series 
+      of hottest room), and users to notify """
+  db = GraphDatabase("http://ec2-52-40-124-21.us-west-2.compute.amazonaws.com:7474")
   
-         dose_list.append(int(response_list[0].sum_rate))
-         times.append(response_list[0].timestamp)
+  dose_list = []
+  times = []
+  alerts = []
 
-       avg_time = sum(times) / (len(times))
-       most_active_room =  dose_list.index(max(dose_list))
-       
-       hottest_room_values = get_room_sum(most_active_room)
-       
-       # Create data for d3 force-directed graph
-       room_file = str(num_rooms) + "_rooms"
-       force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
+  room_alert_threshold = 90
 
-       # Calculate histogram of dose values
-       frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))#np.min(dose_list), np.max(dose_list)+2))
-       histogram_data = []
-       #print dose_value
-       #print frequency
-       for i in range(0, len(frequency)):
-         histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
+  # Get latest dose for all rooms
+  for room in range(0, int(num_rooms)):
+    # Query last sum value for each room
+    stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 1 ALLOW FILTERING".format(room)
+    #response = session.execute(stmt)
+    ## Convert Cassandra response to ROW list
+    #response_list = []
+    #for val in response:
+    #   response_list.append(val)
+    #print response_list
+    response_list = query_cass(stmt)    
+   
+    # If room dose is higher than limit fetch users in <= 2 distance
+    if (len(response_list) > 0 and response_list[0].sum_rate > room_alert_threshold):
+      neighbours = [room]
+      users_to_alert = []
+ 
+      # Find first and second adjacent rooms
+      first = "MATCH (room" + str(num_rooms) + "{ number :'" + str(room) + "'})-[:GATE" + str(num_rooms) + "]-(first_con) RETURN first_con.number as number"
+      second = "MATCH (room" + str(num_rooms) + " { number :'" + str(room) + "'})-[:GATE" + str(num_rooms) + "*2]-(sec_con) RETURN sec_con.number as number"
       
-       #with open('force_graph_data', 'w') as outfile:
-       #  json.dump(force_graph_data, outfile)
-       #return render_template("force_graph_renderer.html", jsondata = (json.dumps(force_graph_data)))
+      results = db.query(first, returns=(int))
+      for r in results:
+        neighbours.append(r[0])
+        
+      results = db.query(second, returns=(int))
+      for r in results:
+        neighbours.append(r[0])
 
+      # Get the users located in the adjecent room
+      for neighbour in neighbours:
+        stmt = "SELECT users FROM room_users WHERE room_id = " + str(neighbour) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
+        response2 = session.execute(stmt)
+        for val in response2:
+          users_to_alert = users_to_alert+ val[0]
+      
+      alert = {"room": room, "users_to_alert": users_to_alert}
+      alerts.append(alert)
+  
+    dose_list.append(int(response_list[0].sum_rate))
+    times.append(response_list[0].timestamp)
 
-       jsonresponse = {"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
-                        "alerts": alerts, "dose": dose_list, "dose_rates": histogram_data, "force_graph": force_graph_data} # for x in response_list]
-       return jsonify(jsonresponse)
+  # Find average time of last events and hottest room
+  avg_time = sum(times) / (len(times))
+  most_active_room =  dose_list.index(max(dose_list))
+  
+  # Get time series for the hottest room
+  hottest_room_values = get_room_sum(most_active_room)
+  
+  # Create data for d3 force-directed graph
+  room_file = str(num_rooms) + "_rooms"
+  force_graph_data = {"nodes": create_room_values(dose_list), "links": create_room_links(room_file)}
+
+  # Calculate histogram of dose values
+  frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))
+  histogram_data = []
+  #print dose_value
+  #print frequency
+  for i in range(0, len(frequency)):
+    histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
+      
+  # Output json  
+  jsonresponse = {"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
+              "alerts": alerts, "dose": dose_list, "dose_rates": histogram_data, "force_graph": force_graph_data}
+  return jsonify(jsonresponse)
 
 
 @app.route('/api/user_notification/<num_users>_<num_rooms>')
