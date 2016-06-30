@@ -157,7 +157,7 @@ def get_room_alerts(num_rooms):
   # Calculate histogram of dose values
   frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))
   histogram_data = []
-   for i in range(0, len(frequency)):
+  for i in range(0, len(frequency)):
     histogram_data.append({"value": dose_value[i], "freq": frequency[i]**0.5})
       
   # Output json  
