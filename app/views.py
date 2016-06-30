@@ -59,10 +59,6 @@ def query_cass(stmt):
 def get_user_rate(userid):
   """ Get rate time series for user """
   stmt = "SELECT * FROM user_rate WHERE user_id={0} ALLOW FILTERING".format(userid)
-  #response = session.execute(stmt)  
-  #response_list = []
-  #for val in response:
-  #  response_list.append(val)
   
   response_list = query_cass(stmt)    
   jsonresponse = [{"time": x.timestamp, "dose_rate": x.rate} for x in response_list]
@@ -73,11 +69,7 @@ def get_user_rate(userid):
 def get_room_rate(userid):
   """ Get rate time series for room """
   stmt = "SELECT * FROM room_rate WHERE room_id={0} ALLOW FILTERING".format(userid)
-  #response = session.execute(stmt)
-  #response_list = []
-  #for val in response:
-  #  response_list.append(val)
-
+ 
   response_list = query_cass(stmt)    
   jsonresponse = [{"time": x.timestamp, "dose_rate": x.rate} for x in response_list]
   return render_template("line_graph_rate.html", jsondata = (json.dumps(jsonresponse)))
@@ -87,10 +79,7 @@ def get_room_rate(userid):
 def get_user_sum(userid):
   """ Get sum time series for user """
   stmt = "SELECT * FROM user_sum WHERE user_id={0} LIMIT 50 ALLOW FILTERING".format(userid)
-  #response = session.execute(stmt)
-  #response_list = []
-  #for val in response:
-  #  response_list.append(val)
+
   response_list = query_cass(stmt)    
   jsonresponse = [{"time": x.timestamp, "dose": int(np.round(x.sum_rate))} for x in response_list]
   return(jsonresponse)
@@ -100,10 +89,7 @@ def get_user_sum(userid):
 def get_room_sum(userid):
   """ Get sum time series for room """
   stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 50 ALLOW FILTERING".format(userid)
-  #response = session.execute(stmt)
-  #response_list = []
-  #for val in response:
-  #  response_list.append(val)
+
   response_list = query_cass(stmt)    
   jsonresponse = [{"time": (x.timestamp), "dose": int(np.round(x.sum_rate))} for x in response_list]
   return(jsonresponse)
@@ -125,12 +111,6 @@ def get_room_alerts(num_rooms):
   for room in range(0, int(num_rooms)):
     # Query last sum value for each room
     stmt = "SELECT * FROM room_sum WHERE room_id={0} LIMIT 1 ALLOW FILTERING".format(room)
-    #response = session.execute(stmt)
-    ## Convert Cassandra response to ROW list
-    #response_list = []
-    #for val in response:
-    #   response_list.append(val)
-    #print response_list
     response_list = query_cass(stmt)    
    
     # If room dose is higher than limit fetch users in <= 2 distance
@@ -177,10 +157,8 @@ def get_room_alerts(num_rooms):
   # Calculate histogram of dose values
   frequency, dose_value = np.histogram(dose_list, bins = range(0,  np.max(dose_list)+10))
   histogram_data = []
-  #print dose_value
-  #print frequency
-  for i in range(0, len(frequency)):
-    histogram_data.append({"value": dose_value[i], "freq": frequency[i]})
+   for i in range(0, len(frequency)):
+    histogram_data.append({"value": dose_value[i], "freq": frequency[i]**0.5})
       
   # Output json  
   jsonresponse = {"avg_time": avg_time, "hottest_room": most_active_room, "hottest_room_values": hottest_room_values,
