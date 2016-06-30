@@ -27,10 +27,10 @@ If a user's dose exceeds the predefined limit the closest (in distance) of his d
 <ul>
 <li>4 m3.large nodes for Kafka and Spark Streaming</li>
 <li>3 m3.large nodes for Cassandra </li>
-<li>1 m3.large Neo4j</li>
-<li>1 m3.large nodes for Flask and the Kafka Producer Python script</li>
+<li>1 m3.large node Neo4j</li>
+<li>1 m3.large node for Flask and the Kafka Producer Python script</li>
 </ul>
-As of July, 2016, this system costs ~$? a day with AWS on-demand instances used.
+As of July, 2016, this system costs ~$26 a day with AWS on-demand instances used.
 
 ## Data Pipeline
 [Back to Table of contents](README.md#table-of-contents)
@@ -47,9 +47,7 @@ The dose rate and room information are sent to separate Kafka topics. A sample o
 Each event of the room stream contains the user id (uid), timestamp (t), new location (nl), and old location (ol) fields. While events of the sensor stream comprises of user id (uid), timestamp (t), and dose rate (dr).
 
 ### Spark Streaming
-Spark Streaming joins the two streams based on the user id and timestamp. 
-...
-Since Spark Streaming defines the window operations based on incoming event time (instead of the timestamp contained in the data) each window is filtered to make sure that for each timestamp the last n events are summed.
+Spark Streaming joins the two streams based on the user id and timestamp. It calculates the average room dose rates based on the combined user signals then integrates both the user and room dose rates in a sliding time window. Since Spark Streaming defines the window operations based on incoming event time (instead of the timestamp contained in the data) each window is filtered to make sure that for each timestamp the last n events are summed.
 
 ### Data bases
 The resulting dose values are stored in Cassandra: partitioned by user id and clustered by timestamp (time is reversed for efficient last record lookups).
