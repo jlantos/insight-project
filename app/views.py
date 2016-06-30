@@ -114,7 +114,7 @@ def get_room_alerts(num_rooms):
   times = []
   alerts = []
 
-  room_alert_threshold = 90
+  room_alert_threshold = 30
 
   # Get latest dose for all rooms
   for room in range(0, int(num_rooms)):
@@ -139,6 +139,7 @@ def get_room_alerts(num_rooms):
       for r in results:
         neighbours.append(r[0])
 
+      print neighbours
       # Get the users located in the adjecent room
       for neighbour in neighbours:
         stmt = "SELECT users FROM room_users WHERE room_id = " + str(neighbour) + " AND timestamp = " + str(response_list[0].timestamp) + ";"
