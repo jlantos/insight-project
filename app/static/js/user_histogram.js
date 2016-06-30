@@ -41,7 +41,7 @@ function updateUserGraphHist(data) {
   })]),
 
 
-  yScale = d3.scale.log().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([1,
+  yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0,
     d3.max(data, function(d) {
     return d.freq;
   })]),
@@ -80,7 +80,7 @@ function updateUserGraphHist(data) {
     .attr("x", 0 - (HEIGHT / 2))
     .attr("dy", "1em")
     .style("text-anchor", "middle")
-    .text("n (log scale)");
+    .text("sqrt(n)");
 
   // Title
   vis4.append("text")

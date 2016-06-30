@@ -84,7 +84,7 @@ function updateRoomGraphHist(data) {
     .attr("x", 0 - (HEIGHT / 2))
     .attr("dy", "1em")
     .style("text-anchor", "middle")
-    .text("n");
+    .text("sqrt(n)");
 
   // Title
   vis3.append("text")
