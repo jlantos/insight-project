@@ -1,14 +1,11 @@
 function getData_for_user_alert() {
-    $.get("/api/user_notification/1000_100", function(graph) {
-       // console.log(graph.dose_rates)
-       // updateRoomAlert(graph.alerts)
-       myFunction2(graph.avg_time, graph.alerts)
+         $.get("/api/user_notification/1000_100", function(graph) {
+         myFunction2(graph.avg_time, graph.alerts)
     });
 };
 
 
 setInterval(getData_for_user_alert, 1000);
-
 
 
 function myFunction2(alert_time, response) {

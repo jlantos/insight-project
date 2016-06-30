@@ -1,31 +1,15 @@
 function getData_for_user() {
-    $.get("/api/user_notification/1000_100", function(graph) {
-       // console.log(graph)
-        updateUserGraph(graph.hottest_user, graph.hottest_user_values)
+         $.get("/api/user_notification/1000_100", function(graph) {
+         updateUserGraph(graph.hottest_user, graph.hottest_user_values)
     });
 };
 
 window.onload = getData_for_user()
 setInterval(getData_for_user, 5000);
 
-//var WIDTH = 600
-//var HEIGHT = 300
- 
-//var MARGINS = {
-//      top: 30,
-//      right: 30,
-//      bottom: 20,
-//      left: 50
-//    }
-
-//var WIDTH = width - MARGINS.left - MARGINS.right;
-//var HEIGHT = height - MARGINS.top - MARGINS.bottom;
-
-
 var vis2 = d3.select("#max_user_graph").insert("svg")
   .attr("width", WIDTH)
   .attr("height", HEIGHT);
-
 
 
 function updateUserGraph(user, data) {
@@ -35,20 +19,16 @@ function updateUserGraph(user, data) {
   vis2.selectAll(".label").remove();
   vis2.selectAll(".title").remove();
 
-
-
   xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
     return d.time;
   }), d3.max(data, function(d) {
     return d.time;
   })]),
-   
 
   yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, 
     1.2 * d3.max(data, function(d) {
     return d.dose;
   })]),
-
 
   xAxis = d3.svg.axis()
     .scale(xScale),
@@ -56,7 +36,6 @@ function updateUserGraph(user, data) {
      .scale(yScale)
   .orient("left");
   
-
   // Draw x axis  
   vis2.append("svg:g")
     .attr("class", "axis")
@@ -69,7 +48,6 @@ function updateUserGraph(user, data) {
     .attr("y",  HEIGHT - 10)
     .style("text-anchor", "middle")
     .text("time");
-
 
   // Draw y axis
   vis2.append("svg:g")
@@ -95,9 +73,7 @@ function updateUserGraph(user, data) {
     .style("font-size", "16px")   
     .text("User " + user.toString() + " (maximum current dose)");
 
-    
   // Draw line
-
   var lineGen = d3.svg.line()
     .x(function(d) {
     return xScale(d.time);
@@ -113,7 +89,4 @@ function updateUserGraph(user, data) {
     .attr('stroke', 'blue')
     .attr('stroke-width', 2)
     .attr('fill', 'none');
-    
 }
-
-//InitChart();

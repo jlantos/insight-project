@@ -1,7 +1,6 @@
 function getData_for_user_hist() {
-    $.get("/api/user_notification/1000_100", function(graph) {
-//        console.log(graph.dose_rates)
-        updateUserGraphHist( graph.dose_rates)
+         $.get("/api/user_notification/1000_100", function(graph) {
+         updateUserGraphHist( graph.dose_rates)
     });
 };
 
@@ -24,14 +23,12 @@ var vis4 = d3.select("#user_histogram").insert("svg")
   .attr("height", HEIGHT);
 
 
-
 function updateUserGraphHist(data) {
    
   vis4.selectAll(".axis").remove();
   vis4.selectAll(".label").remove();
   vis4.selectAll(".title").remove();
   vis4.selectAll(".line").remove();
-
   
   // Scale axes
   xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
@@ -40,19 +37,16 @@ function updateUserGraphHist(data) {
     return d.value;
   })]),
 
-
   yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0,
     d3.max(data, function(d) {
     return d.freq;
   })]),
-
 
   xAxis = d3.svg.axis()
     .scale(xScale),
   yAxis = d3.svg.axis()
      .scale(yScale)
   .orient("left");
-
 
   // Draw x axis  
   vis4.append("svg:g")
@@ -91,9 +85,7 @@ function updateUserGraphHist(data) {
     .style("font-size", "16px")
     .text("User dose distruibution");
 
-
   // Draw line
-
   var lineGen = d3.svg.line()
     .x(function(d) {
     return xScale(d.value);
@@ -109,5 +101,4 @@ function updateUserGraphHist(data) {
     .attr('stroke', 'blue')
     .attr('stroke-width', 2)
     .attr('fill', 'none');
-
 }

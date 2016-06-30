@@ -1,14 +1,10 @@
 function getData_for_room_alert() {
     $.get("/api/room_notification/100", function(graph) {
-       // console.log(graph.dose_rates)
-       // updateRoomAlert(graph.alerts)
        myFunction(graph.avg_time, graph.alerts)
     });
 };
 
-
 setInterval(getData_for_room_alert, 1000);
-
 
 
 function myFunction(alert_time, response) {
@@ -31,6 +27,7 @@ function myFunction(alert_time, response) {
     out += "</table>";
     document.getElementById("id01").innerHTML = out;
 }
+
 
 function users_to_string(user_list) {
    var user_str = '';

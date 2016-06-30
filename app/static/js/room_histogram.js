@@ -1,6 +1,5 @@
 function getData_for_room_hist() {
-    $.get("/api/room_notification/100", function(graph) {
-       // console.log(graph.dose_rates)
+        $.get("/api/room_notification/100", function(graph) {
         updateRoomGraphHist( graph.dose_rates)
     });
 };
@@ -8,20 +7,6 @@ function getData_for_room_hist() {
 
 window.onload = getData_for_room_hist();
 setInterval(getData_for_room_hist, 5000);
-
-//var WIDTH = 600
-//var HEIGHT = 300
- 
-//var MARGINS = {
-//      top: 20,
-//      right: 30,
-//      bottom: 20,
-//      left: 50
-//    }
-
-//var WIDTH = width - MARGINS.left - MARGINS.right;
-//var HEIGHT = height - MARGINS.top - MARGINS.bottom;
-
 
 var vis3 = d3.select("#room_histogram").insert("svg")
   .attr("width", WIDTH)
@@ -35,7 +20,6 @@ function updateRoomGraphHist(data) {
   vis3.selectAll(".label").remove();
   vis3.selectAll(".title").remove();
   vis3.selectAll(".line").remove();
-
   
   // Scale axes
   xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function(d) {
@@ -44,19 +28,16 @@ function updateRoomGraphHist(data) {
     return d.value;
   })]),
 
-
   yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0,
     1.2 * d3.max(data, function(d) {
     return d.freq;
   })]),
-
 
   xAxis = d3.svg.axis()
     .scale(xScale),
   yAxis = d3.svg.axis()
      .scale(yScale)
   .orient("left");
-
 
   // Draw x axis  
   vis3.append("svg:g")
@@ -95,9 +76,7 @@ function updateRoomGraphHist(data) {
     .style("font-size", "16px")
     .text("Room dose distruibution");
 
-
   // Draw line
-
   var lineGen = d3.svg.line()
     .x(function(d) {
     return xScale(d.value);

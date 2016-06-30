@@ -1,7 +1,6 @@
 function getData() {
-    $.get("/api/room_notification/100", function(graph) {
-//        console.log(graph)
-        updateGraph(graph.force_graph)
+         $.get("/api/room_notification/100", function(graph) {
+         updateGraph(graph.force_graph)
     });
 };
 
