@@ -146,8 +146,8 @@ def get_room_alerts(num_rooms):
         response2 = session.execute(stmt)
         for val in response2:
           users_to_alert = users_to_alert+ val[0]
-      
-      alert = {"room": room, "users_to_alert": users_to_alert}
+      print response_list[0].timestamp, users_to_alert      
+      alert = {"room": room, "users_to_alert": users_to_alert, "alert_time": response_list[0].timestamp}
       alerts.append(alert)
   
     dose_list.append(int(response_list[0].sum_rate))
@@ -235,7 +235,7 @@ def get_user_alerts(num_users, num_rooms):
       # Select the one in the shortest distance
       colleague_to_notify = connections[path_lengths.index(min(path_lengths))]        
 
-      alert = {"user_in_danger": user, "user_to_alert": colleague_to_notify, "distance": min(path_lengths)}
+      alert = {"user_in_danger": user, "user_to_alert": colleague_to_notify, "alert_time": response_list[0].timestamp, "distance": min(path_lengths)}
       alerts.append(alert)
 
 
