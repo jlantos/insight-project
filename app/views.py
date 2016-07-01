@@ -146,7 +146,7 @@ def get_room_alerts(num_rooms):
         response2 = session.execute(stmt)
         for val in response2:
           users_to_alert = users_to_alert+ val[0]
-      print response_list[0].timestamp, users_to_alert      
+      # print response_list[0].timestamp, users_to_alert      
       alert = {"room": room, "users_to_alert": users_to_alert, "alert_time": response_list[0].timestamp}
       alerts.append(alert)
   

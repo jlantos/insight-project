@@ -1,6 +1,6 @@
 function getData_for_user_alert() {
          $.get("/api/user_notification/1000_100", function(graph) {
-         myFunction2(graph.avg_time, graph.alerts)
+         myFunction2(graph.alerts)
     });
 };
 
@@ -8,8 +8,7 @@ function getData_for_user_alert() {
 setInterval(getData_for_user_alert, 5000);
 
 
-function myFunction2(alert_time, response) {
-    var time = alert_time
+function myFunction2(response) {
     var arr = response;
     var i;
     var out = "<table style=\"width:100%\">";
@@ -18,7 +17,7 @@ function myFunction2(alert_time, response) {
 
     for(i = 0; i < arr.length; i++) {
         out += "<tr><td>" +
-        time.toString() + 
+        arr[i].alert_time.toString() + 
         "</td><td>" +
         arr[i].user_in_danger +
         "</td><td>" +

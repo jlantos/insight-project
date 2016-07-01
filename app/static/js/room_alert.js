@@ -1,14 +1,13 @@
 function getData_for_room_alert() {
     $.get("/api/room_notification/100", function(graph) {
-       myFunction(graph.avg_time, graph.alerts)
+       myFunction(graph.alerts)
     });
 };
 
 setInterval(getData_for_room_alert, 5000);
 
 
-function myFunction(alert_time, response) {
-    var time = alert_time
+function myFunction(response) {
     var arr = (response);
     var i;
     var out = "<table style=\"width:100%\">";
@@ -17,7 +16,7 @@ function myFunction(alert_time, response) {
 
     for(i = 0; i < arr.length; i++) {
         out += "<tr><td>" +
-        time.toString() + 
+        arr[i].alert_time.toString() + 
         "</td><td>" +
         arr[i].room +
         "</td><td>" +
