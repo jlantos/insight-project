@@ -6,7 +6,7 @@ function getData_for_room_hist() {
 
 
 window.onload = getData_for_room_hist();
-setInterval(getData_for_room_hist, 5000);
+setInterval(getData_for_room_hist, 2000);
 
 var vis3 = d3.select("#room_histogram").insert("svg")
   .attr("width", WIDTH)

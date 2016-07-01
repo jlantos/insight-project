@@ -6,7 +6,7 @@ function getData_for_user_hist() {
 
 window.onload = getData_for_user_hist();
 
-setInterval(getData_for_user_hist(), 5000);
+setInterval(getData_for_user_hist(), 2000);
 
 var WIDTH = 600
 var HEIGHT = 300
