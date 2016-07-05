@@ -83,7 +83,8 @@ def main():
 
       ### Calculating dose rate ###
       # Dose rate is normal except in room 6 an room 96
-      if (new_location == 6 and t > 20 and t < 60) or (new_location == 96 and t > 70 and t < 110):
+     # if (new_location == 6 and t > 20 and t < 60) or (new_location == 96 and t > 70 and t < 110):
+      if new_location == 6:
         rate = contamination
       else:
         rate = background
@@ -92,7 +93,8 @@ def main():
       if random.random() < 1.0/60:
         rate = rate + normal_work
       # User 123 and 523gets extra amount of radiation
-      if (user_id == 123 and t > 10 and t < 40) or (user_id == 523 and t > 60 and t < 120):
+      #if (user_id == 123 and t > 10 and t < 40) or (user_id == 523 and t > 60 and t < 120):
+      if user_id == 123:
         rate = rate + normal_work * 2
    
 
