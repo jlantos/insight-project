@@ -4,7 +4,7 @@ function getData_for_room_alert() {
     });
 };
 
-setInterval(getData_for_room_alert, 5000);
+setInterval(getData_for_room_alert, 10000);
 
 
 function myFunction(response) {
