@@ -62,4 +62,4 @@ The current system uses a sliding window of 100 s windowLength and 5 s slideInte
 
 
 ## Presentation
-[Presentation](https://jlantos.github.io/) and demo [video](https://youtu.be/9nItrNTMYFs) for [RadiAction](http://radiaction.site).
+[Presentation](https://jlantos.github.io/) and demo [video](https://youtu.be/9nItrNTMYFs) for RadiAction.
