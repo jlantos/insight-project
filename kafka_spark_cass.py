@@ -28,7 +28,11 @@ from pyspark.sql import functions
 
 def raw_data_tojson(sensor_data):
   """ Parse input json stream """
+  # The Kafka messages arrive as a tuple (None, {"room":{"uid": 42, "time": 1, "loc": 32}})
+  # this first line grabs the nested json (second element) 
   raw_sensor = sensor_data.map(lambda k: json.loads(k[1]))
+  # .keys() finds all keys of the json - this case there is only one: "room"
+  # the value of the key "room" is returned as a json
   return(raw_sensor.map(lambda x: json.loads(x[x.keys()[0]])))
  
 
@@ -62,9 +66,10 @@ def main():
     ssc.checkpoint("hdfs://ec2-52-24-174-234.us-west-2.compute.amazonaws.com:9000/usr/sp_data")
 
     zkQuorum, topic1, topic2 = sys.argv[1:]
+    # Specify all the nodes you are running Kafka on
     kafkaBrokers = {"metadata.broker.list": "52.35.6.29:9092, 52.41.24.92:9092, 52.41.26.121:9092, 52.24.174.234:9092"}
     
-    # Get the sensor and location data streams
+    # Get the sensor and location data streams - they have separate Kafka topics
     sensor_data = KafkaUtils.createDirectStream(ssc, [topic1], kafkaBrokers)
     loc_data = KafkaUtils.createDirectStream(ssc, [topic2], kafkaBrokers)
 
@@ -78,6 +83,7 @@ def main():
     raw_sensor = raw_data_tojson(sensor_data)
     
     # Map the 2 streams to ((userid, time), value) then join the streams
+    # 
     s1 = raw_loc.map(lambda x: ((x["room"]["uid"], x["room"]["t"]) , x["room"]["nl"]))
     s2 = raw_sensor.map(lambda x: ((x["sens"]["uid"], x["sens"]["t"]), x["sens"]["dr"]))
 
