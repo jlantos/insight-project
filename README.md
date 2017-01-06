@@ -42,6 +42,7 @@ The image below depicts the underlying data pipeline.
 ### Data source
 The data streams are synthesized based on a predefined room graph (each node with a degree of 3). In each time point the users are moving to an adjacent room with a set probability (2/60) and then the dose rate is assigned based on the locations signal. Normal rooms have a background rate value 1, while contaminated rooms have an elevated background of 5. Since radiation exposure due to normal work is expected an additional rate of 9 is added to the users' signal with a probability of 1/60. 
 The dose rate and room information are sent to separate Kafka topics. A sample of the input data is shown below. 
+
 ![Alt text](app/static/img/input.png?raw=true "Input data")
 
 Each event of the room stream contains the user id (uid), timestamp (t), new location (nl), and old location (ol) fields. While events of the sensor stream comprises of user id (uid), timestamp (t), and dose rate (dr).
